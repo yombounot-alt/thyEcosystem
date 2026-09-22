@@ -1,0 +1,29 @@
+name: thy_mobile
+
+packages:
+  - app
+  - packages/**
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
+  version:
+    branch: main
+    message: "chore(mobile): version packages"
+
+scripts:
+  analyze:
+    run: melos exec -- "dart analyze --fatal-infos"
+    description: Analyse statique de tous les packages Flutter/Dart.
+
+  format:
+    run: melos exec -- "dart format --set-exit-if-changed ."
+    description: Vérifie le formatage de tous les packages.
+
+  test:
+    run: melos exec --dir-exists=test -- "flutter test"
+    description: Exécute les tests de chaque package qui en possède.
+
+  test:golden:
+    run: melos exec --dir-exists=test -- "flutter test --update-goldens=false --tags=golden"
+    description: Exécute uniquement les tests golden (clair/sombre).

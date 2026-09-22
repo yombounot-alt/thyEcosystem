@@ -150,6 +150,7 @@ thyEcosystem/
 ```
 
 ## Règles associées
+
 - **Import inter-modules** : uniquement `modules/<x>/contracts/**` (vérifié CI).
 - **Un module = un schéma PG** (`db/migrations/<schema>/…`) ; les tables portent le schéma dans leur définition.
 - **Aucun fichier `.env` réel commité** ; `.env.example` documente chaque variable sans valeur sensible.
@@ -157,4 +158,5 @@ thyEcosystem/
 - **Conventions de nommage** : `snake_case` DB, `kebab-case` fichiers TS, `snake_case` fichiers Dart, `SCREAMING_SNAKE` événements/permissions-codes de statut.
 
 ## Outillage local à installer en Phase 0 (H6)
+
 `pnpm` (via Corepack), **JDK 17** + Android SDK/émulateur, Docker Desktop (WSL2) déjà présent, Node LTS déjà présent, Flutter déjà présent (vérifier version/`flutter doctor`), CLI de fournisseur cloud, `gitleaks`, `k6`. **iOS** : compilation via CI macOS uniquement (pas de Mac local).

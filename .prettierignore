@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+.husky/_
+**/*.g.dart
+**/*.freezed.dart
+**/*.gr.dart

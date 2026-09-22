@@ -1,0 +1,8 @@
+name: thy_mobile_workspace
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+dev_dependencies:
+  melos: ^8.9.0

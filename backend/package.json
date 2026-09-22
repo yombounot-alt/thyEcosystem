@@ -1,0 +1,51 @@
+{
+  "name": "@thy/backend",
+  "version": "0.1.0",
+  "description": "THY Ecosystem — API (NestJS + PostgreSQL/PostGIS + Redis)",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "migrate": "node dist/database/migrate-cli.js",
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
+    "test:watch": "vitest --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
+    "@node-rs/argon2": "^2.0.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "express": "^5.2.1",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.1",
+    "jose": "^6.0.0",
+    "pg": "^8.13.0",
+    "pino": "^9.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.0.1",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/supertest": "^6.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "supertest": "^7.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}

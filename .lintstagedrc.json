@@ -1,0 +1,4 @@
+{
+  "*.{ts,tsx,js,jsx}": ["prettier --check"],
+  "*.{json,md,yml,yaml}": ["prettier --check"]
+}

@@ -63,6 +63,7 @@ flowchart LR
 ```
 
 **Propriétés clés**
+
 - L'`api` est **sans état** (scalable horizontalement) ; l'état vit dans PG/Redis/S3.
 - Le `worker` exécute tout ce qui est asynchrone ou planifié ; il partage le code des modules mais **pas** le trafic HTTP.
 - Un seul **leader** exécute les tâches planifiées (verrou consultatif PG/Redis).
@@ -83,51 +84,51 @@ flowchart LR
 
 **Règles (vérifiées en CI par `dependency-cruiser` + tests d'architecture)**
 
-| # | Règle |
-|---|---|
-| R1 | Un tier ne dépend que des tiers **inférieurs** (ou de lui-même). |
-| R2 | Un module n'importe d'un autre module **que** `@thy/<module>/contracts` (facade, DTO, schémas d'événements). |
-| R3 | Deux **modules métier** (tier 3) ne s'appellent **jamais** directement, sauf dépendance déclarée §8 ; sinon → **événement**. |
-| R4 | Le **kernel** ne contient aucune logique métier ni connaissance d'un module. |
-| R5 | Un module n'écrit que dans **son schéma PG** ; les lectures inter-schémas passent par la facade (exceptions listées dans [03 §6](03-database.md)). |
-| R6 | Les modules **ne connaissent pas** leurs consommateurs d'événements. |
-| R7 | Aucun `import` de `infrastructure/` depuis l'extérieur du module. |
+| #   | Règle                                                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Un tier ne dépend que des tiers **inférieurs** (ou de lui-même).                                                                                   |
+| R2  | Un module n'importe d'un autre module **que** `@thy/<module>/contracts` (facade, DTO, schémas d'événements).                                       |
+| R3  | Deux **modules métier** (tier 3) ne s'appellent **jamais** directement, sauf dépendance déclarée §8 ; sinon → **événement**.                       |
+| R4  | Le **kernel** ne contient aucune logique métier ni connaissance d'un module.                                                                       |
+| R5  | Un module n'écrit que dans **son schéma PG** ; les lectures inter-schémas passent par la facade (exceptions listées dans [03 §6](03-database.md)). |
+| R6  | Les modules **ne connaissent pas** leurs consommateurs d'événements.                                                                               |
+| R7  | Aucun `import` de `infrastructure/` depuis l'extérieur du module.                                                                                  |
 
 ---
 
 ## 3. Carte des modules et moteurs
 
-| Tier | Module | Responsabilité | Phase |
-|---|---|---|---|
-| 1 | `kernel/*` | Fondations techniques transverses | 0 |
-| 2 | `auth` | OTP, mots de passe, JWT, sessions, appareils, récupération | 0 |
-| 2 | `users` | Compte, profil, personas, consentements | 0 |
-| 2 | `businesses` | Entreprises, lieux, membres, invitations | 0 |
-| 2 | `rbac` | Rôles, permissions, évaluation, cache | 0 |
-| 2 | `subscriptions` | Plans, entitlements, quotas, flags | 0 (squelette) → 1 |
-| 2 | `notifications` | Push/SMS/e-mail/in-app, préférences, gabarits | 0 (base) → 1 |
-| 2 | `media` | Upload signé, scan, variantes, liens | 0 |
-| 2 | `audit` | Journal append-only | 0 |
-| 2 | `payments` | `PaymentProvider`, machine d'états, grand livre, remboursements, paiements sortants | 1 (abonnements) → 3 |
-| 2 | `search` | Index global + moteurs par module | 3 |
-| 2 | `messaging` | Conversations, messages, blocages | 3 |
-| 2 | `reviews` | Avis liés à une interaction réelle | 3 |
-| 2 | `verification` | Vérifications KYC/entreprise/pro | 3 |
-| 2 | `moderation` | Signalements, files, décisions, litiges | 3 |
-| 2 | `geo` | Adresses, zones, `GeoProvider` | 3–4 |
-| 2 | `engagement` | Favoris, recherches sauvegardées/alertes | 3 |
-| 2 | `support` | Tickets, litiges | 3 |
-| 2 | `ai-gateway` | Abstraction LLM, quotas, journal | 2 |
-| 3 | `business` | Caisse, ventes, produits, stock, achats, contacts, crédits, dépenses, employés, rapports | 1 |
-| 3 | `ai` | Assistant, outils, pipeline, vision | 2, 10 |
-| 3 | `marketplace` | Boutiques, listings, panier, commandes | 3 |
-| 3 | `delivery` | Livreurs, missions, suivi, preuve, API externe | 4 |
-| 3 | `services` | Prestataires, devis, réservations | 5 |
-| 3 | `immo` | Biens, annonces, visites | 6 |
-| 3 | `jobs` | CV, offres, candidatures, alertes | 7 |
-| 3 | `agro` | Producteurs, offres, commandes, fret | 8 |
-| 3 | `finance` | THY Money : comptes perso, budgets, objectifs | 9 |
-| 3 | `academy` | Cours, quiz, progression, hors-ligne | 10 |
+| Tier | Module          | Responsabilité                                                                           | Phase               |
+| ---- | --------------- | ---------------------------------------------------------------------------------------- | ------------------- |
+| 1    | `kernel/*`      | Fondations techniques transverses                                                        | 0                   |
+| 2    | `auth`          | OTP, mots de passe, JWT, sessions, appareils, récupération                               | 0                   |
+| 2    | `users`         | Compte, profil, personas, consentements                                                  | 0                   |
+| 2    | `businesses`    | Entreprises, lieux, membres, invitations                                                 | 0                   |
+| 2    | `rbac`          | Rôles, permissions, évaluation, cache                                                    | 0                   |
+| 2    | `subscriptions` | Plans, entitlements, quotas, flags                                                       | 0 (squelette) → 1   |
+| 2    | `notifications` | Push/SMS/e-mail/in-app, préférences, gabarits                                            | 0 (base) → 1        |
+| 2    | `media`         | Upload signé, scan, variantes, liens                                                     | 0                   |
+| 2    | `audit`         | Journal append-only                                                                      | 0                   |
+| 2    | `payments`      | `PaymentProvider`, machine d'états, grand livre, remboursements, paiements sortants      | 1 (abonnements) → 3 |
+| 2    | `search`        | Index global + moteurs par module                                                        | 3                   |
+| 2    | `messaging`     | Conversations, messages, blocages                                                        | 3                   |
+| 2    | `reviews`       | Avis liés à une interaction réelle                                                       | 3                   |
+| 2    | `verification`  | Vérifications KYC/entreprise/pro                                                         | 3                   |
+| 2    | `moderation`    | Signalements, files, décisions, litiges                                                  | 3                   |
+| 2    | `geo`           | Adresses, zones, `GeoProvider`                                                           | 3–4                 |
+| 2    | `engagement`    | Favoris, recherches sauvegardées/alertes                                                 | 3                   |
+| 2    | `support`       | Tickets, litiges                                                                         | 3                   |
+| 2    | `ai-gateway`    | Abstraction LLM, quotas, journal                                                         | 2                   |
+| 3    | `business`      | Caisse, ventes, produits, stock, achats, contacts, crédits, dépenses, employés, rapports | 1                   |
+| 3    | `ai`            | Assistant, outils, pipeline, vision                                                      | 2, 10               |
+| 3    | `marketplace`   | Boutiques, listings, panier, commandes                                                   | 3                   |
+| 3    | `delivery`      | Livreurs, missions, suivi, preuve, API externe                                           | 4                   |
+| 3    | `services`      | Prestataires, devis, réservations                                                        | 5                   |
+| 3    | `immo`          | Biens, annonces, visites                                                                 | 6                   |
+| 3    | `jobs`          | CV, offres, candidatures, alertes                                                        | 7                   |
+| 3    | `agro`          | Producteurs, offres, commandes, fret                                                     | 8                   |
+| 3    | `finance`       | THY Money : comptes perso, budgets, objectifs                                            | 9                   |
+| 3    | `academy`       | Cours, quiz, progression, hors-ligne                                                     | 10                  |
 
 > Le brief listait `/roles`, `/permissions`, `/products`, `/orders`, `/payments` comme modules plats. Ici : `rbac` regroupe rôles+permissions ; produits/stock/commandes POS vivent dans `business`, commandes en ligne dans `marketplace`, `payments` est un moteur.
 
@@ -135,12 +136,12 @@ flowchart LR
 
 ## 4. Topologie d'exécution
 
-| Processus | Rôle | Scaling | Notes |
-|---|---|---|---|
-| `api` | HTTP REST, WebSocket, SSE (IA) | Horizontal (sans état) | WS multi-instances via adaptateur Redis |
-| `worker` | Relais outbox, consommateurs, jobs (notifications, index, IA longue), planificateur, webhooks entrants, réconciliation paiements | Horizontal par file | Concurrence configurée par file ; verrou leader pour le cron |
-| `migrate` | Applique les migrations **avant** le déploiement de l'`api` | Ponctuel | Jamais au démarrage de l'API |
-| `admin` (statique) | SPA derrière CDN | CDN | Parle à `/admin/v1` |
+| Processus          | Rôle                                                                                                                             | Scaling                | Notes                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `api`              | HTTP REST, WebSocket, SSE (IA)                                                                                                   | Horizontal (sans état) | WS multi-instances via adaptateur Redis                      |
+| `worker`           | Relais outbox, consommateurs, jobs (notifications, index, IA longue), planificateur, webhooks entrants, réconciliation paiements | Horizontal par file    | Concurrence configurée par file ; verrou leader pour le cron |
+| `migrate`          | Applique les migrations **avant** le déploiement de l'`api`                                                                      | Ponctuel               | Jamais au démarrage de l'API                                 |
+| `admin` (statique) | SPA derrière CDN                                                                                                                 | CDN                    | Parle à `/admin/v1`                                          |
 
 Extraction future : un `worker` peut être spécialisé (`worker-ai`, `worker-tracking`) par simple variable de configuration listant les files consommées.
 
@@ -220,7 +221,7 @@ flowchart TD
   "actor": { "user_id": "…", "kind": "USER|SYSTEM|STAFF" },
   "correlation_id": "…",
   "causation_id": "…",
-  "payload": { }
+  "payload": {}
 }
 ```
 
@@ -258,35 +259,35 @@ sequenceDiagram
 
 ### 6.3 Règle de cohérence
 
-| Situation | Mécanisme |
-|---|---|
-| Invariant intra-module (vente ↔ stock ↔ crédit client) | **Même transaction** ACID |
-| Effet inter-modules (notification, stats, index, livraison, IA) | **Événement** |
-| Flux multi-étapes avec compensation (checkout) | **Process manager** persistant dans le module propriétaire de l'agrégat |
+| Situation                                                       | Mécanisme                                                               |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Invariant intra-module (vente ↔ stock ↔ crédit client)          | **Même transaction** ACID                                               |
+| Effet inter-modules (notification, stats, index, livraison, IA) | **Événement**                                                           |
+| Flux multi-étapes avec compensation (checkout)                  | **Process manager** persistant dans le module propriétaire de l'agrégat |
 
 > Écart avec l'exemple du brief : la diminution du stock **n'est pas** déclenchée par `SALE_COMPLETED`, elle fait partie de la transaction de vente. `SALE_COMPLETED` déclenche stats, alertes stock bas, index, recommandations.
 
 ### 6.4 Catalogue initial
 
-| Événement | Producteur | Consommateurs |
-|---|---|---|
-| `USER_REGISTERED` | users | notifications (bienvenue), analytics |
-| `BUSINESS_CREATED` | businesses | subscriptions (plan FREE), rbac (rôles par défaut), analytics |
-| `MEMBER_ROLE_CHANGED` | businesses | rbac (invalidation cache), audit |
-| `PRODUCT_UPDATED` | business | marketplace (listings liés), search |
-| `SALE_COMPLETED` | business | reports, notifications, analytics, ai (cache) |
-| `STOCK_LOW` | business | notifications, ai |
-| `LISTING_PUBLISHED / UNPUBLISHED` | marketplace | search, notifications |
-| `ORDER_CREATED` | marketplace | notifications (vendeur, client), analytics |
-| `PAYMENT_SUCCEEDED / FAILED / EXPIRED / REFUNDED` | payments | marketplace, services, agro, subscriptions, notifications |
-| `ORDER_PAID` | marketplace | delivery (création), business (vente canal MARKETPLACE), notifications |
-| `DELIVERY_CREATED … DELIVERED / FAILED / CANCELLED` | delivery | marketplace/agro (statut), notifications, reviews (éligibilité) |
-| `VERIFICATION_APPROVED / REJECTED` | verification | subject module, notifications, search |
-| `REPORT_SUBMITTED`, `MODERATION_ACTION_TAKEN` | moderation | modules concernés, notifications, audit |
-| `SUBSCRIPTION_CHANGED` | subscriptions | rbac/cache entitlements, notifications |
-| `BOOKING_CONFIRMED / COMPLETED` | services | notifications, reviews, payments |
-| `JOB_APPLICATION_SUBMITTED` | jobs | notifications, ai (optionnel) |
-| `PROPERTY_LISTING_VERIFIED` | immo | search, notifications |
+| Événement                                           | Producteur    | Consommateurs                                                          |
+| --------------------------------------------------- | ------------- | ---------------------------------------------------------------------- |
+| `USER_REGISTERED`                                   | users         | notifications (bienvenue), analytics                                   |
+| `BUSINESS_CREATED`                                  | businesses    | subscriptions (plan FREE), rbac (rôles par défaut), analytics          |
+| `MEMBER_ROLE_CHANGED`                               | businesses    | rbac (invalidation cache), audit                                       |
+| `PRODUCT_UPDATED`                                   | business      | marketplace (listings liés), search                                    |
+| `SALE_COMPLETED`                                    | business      | reports, notifications, analytics, ai (cache)                          |
+| `STOCK_LOW`                                         | business      | notifications, ai                                                      |
+| `LISTING_PUBLISHED / UNPUBLISHED`                   | marketplace   | search, notifications                                                  |
+| `ORDER_CREATED`                                     | marketplace   | notifications (vendeur, client), analytics                             |
+| `PAYMENT_SUCCEEDED / FAILED / EXPIRED / REFUNDED`   | payments      | marketplace, services, agro, subscriptions, notifications              |
+| `ORDER_PAID`                                        | marketplace   | delivery (création), business (vente canal MARKETPLACE), notifications |
+| `DELIVERY_CREATED … DELIVERED / FAILED / CANCELLED` | delivery      | marketplace/agro (statut), notifications, reviews (éligibilité)        |
+| `VERIFICATION_APPROVED / REJECTED`                  | verification  | subject module, notifications, search                                  |
+| `REPORT_SUBMITTED`, `MODERATION_ACTION_TAKEN`       | moderation    | modules concernés, notifications, audit                                |
+| `SUBSCRIPTION_CHANGED`                              | subscriptions | rbac/cache entitlements, notifications                                 |
+| `BOOKING_CONFIRMED / COMPLETED`                     | services      | notifications, reviews, payments                                       |
+| `JOB_APPLICATION_SUBMITTED`                         | jobs          | notifications, ai (optionnel)                                          |
+| `PROPERTY_LISTING_VERIFIED`                         | immo          | search, notifications                                                  |
 
 ### 6.5 Exemple : checkout Marketplace (process manager)
 
@@ -379,19 +380,19 @@ abstract class ThyModule {
 
 ### 7.6 État, réseau, données
 
-| Sujet | Décision |
-|---|---|
-| État | Riverpod (providers `AsyncNotifier`), immutabilité via freezed |
-| Réseau | Dio ; intercepteurs : auth (refresh **single-flight**), `Idempotency-Key`, `X-App-Version`, `X-Request-Id`, ETag, retry/backoff GET ; timeouts courts + annulation |
-| Cache | Stale-while-revalidate ; TTL par ressource ; invalidations par événements WS/push |
-| Local DB | Drift + SQLCipher ; clé dans Keystore/Keychain ; purge à la déconnexion |
-| Modèles | DTO générés → modèles de domaine (mappers explicites) |
-| Erreurs | `code` serveur → message localisé ; état « hors-ligne » distinct de « erreur » |
-| Média | Miniatures WebP/AVIF serveur, cache disque borné, chargement paresseux |
+| Sujet    | Décision                                                                                                                                                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| État     | Riverpod (providers `AsyncNotifier`), immutabilité via freezed                                                                                                     |
+| Réseau   | Dio ; intercepteurs : auth (refresh **single-flight**), `Idempotency-Key`, `X-App-Version`, `X-Request-Id`, ETag, retry/backoff GET ; timeouts courts + annulation |
+| Cache    | Stale-while-revalidate ; TTL par ressource ; invalidations par événements WS/push                                                                                  |
+| Local DB | Drift + SQLCipher ; clé dans Keystore/Keychain ; purge à la déconnexion                                                                                            |
+| Modèles  | DTO générés → modèles de domaine (mappers explicites)                                                                                                              |
+| Erreurs  | `code` serveur → message localisé ; état « hors-ligne » distinct de « erreur »                                                                                     |
+| Média    | Miniatures WebP/AVIF serveur, cache disque borné, chargement paresseux                                                                                             |
 
 ### 7.7 Design system (structure — palette à fournir, D10)
 
-- **Couches de tokens** : *primitifs* (échelles brutes) → *sémantiques* (`surface`, `onSurface`, `primary`, `danger`, `success`…) → *composants*. Le mode sombre ne redéfinit que les sémantiques.
+- **Couches de tokens** : _primitifs_ (échelles brutes) → _sémantiques_ (`surface`, `onSurface`, `primary`, `danger`, `success`…) → _composants_. Le mode sombre ne redéfinit que les sémantiques.
 - **Source unique JSON** → génération `ThemeExtension` Flutter + variables CSS admin (Style Dictionary).
 - **Échelles** : espacement 4/8 pt, rayons (`xs…full`), élévations, typographie (1 police variable sous-ensemble, tailles relatives pour l'accessibilité), durées de mouvement.
 - **Accent par module** (une teinte d'accent chacun, même socle neutre) : cohérence + repérage.
@@ -412,14 +413,14 @@ Stockage sécurisé (Keychain/Keystore) pour refresh token + clé SQLCipher ; d�
 
 ### 7.10 Budgets de performance (appareil cible : Android 2 Go RAM, entrée de gamme)
 
-| Métrique | Budget |
-|---|---|
-| Démarrage à froid → écran interactif | < 2,5 s |
+| Métrique                               | Budget                                          |
+| -------------------------------------- | ----------------------------------------------- |
+| Démarrage à froid → écran interactif   | < 2,5 s                                         |
 | Taille de téléchargement (AAB par ABI) | < 40 Mo (modules lourds en composants différés) |
-| Liste : temps de frame | 60 fps, pas de jank > 16 ms sur défilement |
-| Page de liste API | ≤ 50 Ko compressés, 20 éléments |
-| Miniature liste | ≤ 40 Ko |
-| Mémoire pic | < 300 Mo |
+| Liste : temps de frame                 | 60 fps, pas de jank > 16 ms sur défilement      |
+| Page de liste API                      | ≤ 50 Ko compressés, 20 éléments                 |
+| Miniature liste                        | ≤ 40 Ko                                         |
+| Mémoire pic                            | < 300 Mo                                        |
 
 ---
 
@@ -471,28 +472,28 @@ flowchart TD
 
 ### 8.2 Matrice de dépendances autorisées entre modules métier (tier 3)
 
-| Appelant ↓ / Appelé → | business | delivery | ai | finance |
-|---|---|---|---|---|
-| marketplace | ✅ facade (produits, réservation stock) | via événements | — | — |
-| ai | ✅ facade (outils, lecture seule) | — | — | ✅ facade (avec consentement) |
-| jobs | ✅ facade (identité employeur) | — | via ai-gateway | — |
-| agro | — | ✅ facade (création fret) | — | — |
-| business | ⟵ écoute `ORDER_PAID`, `DELIVERY_*` | — | — | — |
+| Appelant ↓ / Appelé → | business                                | delivery                  | ai             | finance                       |
+| --------------------- | --------------------------------------- | ------------------------- | -------------- | ----------------------------- |
+| marketplace           | ✅ facade (produits, réservation stock) | via événements            | —              | —                             |
+| ai                    | ✅ facade (outils, lecture seule)       | —                         | —              | ✅ facade (avec consentement) |
+| jobs                  | ✅ facade (identité employeur)          | —                         | via ai-gateway | —                             |
+| agro                  | —                                       | ✅ facade (création fret) | —              | —                             |
+| business              | ⟵ écoute `ORDER_PAID`, `DELIVERY_*`     | —                         | —              | —                             |
 
 Tout ce qui n'est pas coché passe par **événement** ou est **interdit**. Une nouvelle dépendance = revue d'architecture + mise à jour de cette matrice.
 
 ### 8.3 Ordre de construction des moteurs
 
-| Moteur | Construit en | Premier consommateur |
-|---|---|---|
-| auth, users, businesses, rbac, audit, media, notifications (base), kernel | Phase 0 | tous |
-| subscriptions/entitlements | Phase 0 (squelette), Phase 1 (complet) | Business |
-| payments (abonnements) | fin Phase 1 | Business |
-| ai-gateway | Phase 2 | AI |
-| search, messaging, reviews, verification, moderation, engagement, support, geo (base) | Phase 3 | Marketplace |
-| payments (commandes, paiements sortants, séquestre) | Phase 3 | Marketplace |
-| geo (itinéraires, zones), API keys + webhooks sortants | Phase 4 | Delivery |
-| vision/OCR pipeline | Phase 10 | Academy |
+| Moteur                                                                                | Construit en                           | Premier consommateur |
+| ------------------------------------------------------------------------------------- | -------------------------------------- | -------------------- |
+| auth, users, businesses, rbac, audit, media, notifications (base), kernel             | Phase 0                                | tous                 |
+| subscriptions/entitlements                                                            | Phase 0 (squelette), Phase 1 (complet) | Business             |
+| payments (abonnements)                                                                | fin Phase 1                            | Business             |
+| ai-gateway                                                                            | Phase 2                                | AI                   |
+| search, messaging, reviews, verification, moderation, engagement, support, geo (base) | Phase 3                                | Marketplace          |
+| payments (commandes, paiements sortants, séquestre)                                   | Phase 3                                | Marketplace          |
+| geo (itinéraires, zones), API keys + webhooks sortants                                | Phase 4                                | Delivery             |
+| vision/OCR pipeline                                                                   | Phase 10                               | Academy              |
 
 ---
 

@@ -1,0 +1,82 @@
+# Environnement de développement local pour THY.
+# Démarrage : voir infra/scripts/dev-up.ps1 (ou `docker compose -f infra/docker/compose.dev.yml up -d`).
+# Référence : docs/blueprint/12-devops-monitoring.md §1, docs/plans/phase-0-foundation.md L0.2.
+#
+# Ports décalés des ports par défaut (5435/6381/9002-9003/1026/8026) : ce poste fait tourner
+# plusieurs autres projets THY (thyBusiness, thyAppTransit, guineeBesoin…) dont les propres
+# docker-compose occupent déjà 5432-5434/6379-6380/9000-9001/1025/8025 — même logique que
+# thyBusiness/docker-compose.yml. Voir backend/.env.example pour DATABASE_URL/REDIS_URL assortis.
+
+name: thy-dev
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: thy
+      POSTGRES_USER: thy_migrator
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thy_migrator -d thy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: thy_minio
+      MINIO_ROOT_PASSWORD: changeme123
+    ports:
+      - "9002:9000" # API S3-compatible
+      - "9003:9001" # Console web
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1026:1025" # SMTP
+      - "8026:8025" # UI web
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector.yml"]
+    volumes:
+      - ./otel-collector.yml:/etc/otel-collector.yml:ro
+    ports:
+      - "4318:4318" # OTLP HTTP
+
+volumes:
+  pg_data:
+  redis_data:
+  minio_data:
