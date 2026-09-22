@@ -178,6 +178,6 @@ Sur-ingénierie du kernel (R20) → limiter au strict nécessaire pour L0.6–L0
 | 1 | Cloud | **Résolu : GCP** (ADR-012 mis à jour) |
 | 2 | Fichier vectoriel du logo | **Résolu : indisponible.** On avance avec le PNG ; monogramme carré 1024×1024 déjà extrait ([docs/brand/assets/monogram-icon-source-1024.png](../brand/assets/monogram-icon-source-1024.png)), suffisant pour générer les icônes d'app. Version fond sombre et icône monochrome restent une tâche du designer du logo (non substituable). |
 | 3 | Police de marque | **Ouvert.** Hypothèse retenue par défaut : géométrique type Montserrat. Je démarre L0.9 avec cette hypothèse, remplaçable sans casser les tokens (la police est un paramètre, pas une couleur). |
-| 4 | Dépôt distant / organisation GitHub | **Ouvert.** J'ai initialisé le dépôt **localement** (L0.0). Donne-moi l'URL du dépôt distant (ou nom d'org + nom de repo à créer) pour que je configure le remote et pousse. |
+| 4 | Dépôt distant / organisation GitHub | **Résolu.** `git@github.com:yombounot-alt/thyEcosystem.git`, branche `main` poussée. |
 
-Prérequis d'outillage (§2) encore **non confirmés sur ce poste** : `pnpm` (peut être activé automatiquement via Corepack, sans risque — je le fais en L0.1) et **JDK 17 + Android SDK** (installation plus lourde, à faire par toi ou sur confirmation explicite, nécessaire avant de builder l'app Android en L0.10).
+Prérequis d'outillage (§2) : **`pnpm` installé** (12.5.1, via npm global — Corepack n'est plus fourni avec Node ≥ 25 sur ce poste). **JDK 17 + Android SDK** restent **non installés** (installation plus lourde, nécessaire avant de builder l'app Android en L0.10, à faire par toi ou sur confirmation explicite).
