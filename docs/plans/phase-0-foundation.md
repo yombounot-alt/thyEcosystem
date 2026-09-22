@@ -63,7 +63,9 @@ Ordre d'exécution **recommandé** (respecte les dépendances techniques). Les l
 - Environnement GitHub `production` protégé (règle d'approbation) créé **dès maintenant**, vide de contenu.
 - **Dépend de** : L0.1. **Sortie** : une PR vide déclenche tous les workflows en vert.
 
-### L0.5 — Kernel backend _(avant L0.4 infra — le kernel doit exister pour valider l'infra avec une vraie appli)_
+### L0.5 — Kernel backend ✅ _(fait, commit `14c4fd5`)_
+
+Implémenté avec le style « SQL brut + `pg` » de thyServices (décision D-ORM : le kernel n'utilise pas Drizzle, voir ADR-018) plutôt que le kernel Drizzle décrit ci-dessous à l'origine : config typée validée, `Db` (pool + `tx()` + **`withTenant()`** posant `SET LOCAL app.user_id`/`app.business_id`), Redis, crypto (argon2id/HMAC), logger avec redaction, filtre d'erreurs `problem+json`, outbox/audit/idempotency transactionnels, migrateur SQL forward-only (verrou consultatif, checksum). Rôles PG séparés `thy_migrator`/`thy_app` (NOBYPASSRLS) opérationnels. _(Description originale du lot, conservée pour mémoire, avant L0.4 infra — le kernel doit exister pour valider l'infra avec une vraie appli :)_
 
 - `backend/` : NestJS, structure `kernel/*` complète ([13 §backend](../blueprint/13-repository-structure.md)) :
   - `config/` : schéma Zod d'environnement, refus de démarrage si invalide ou si `SandboxProvider` actif hors dev/staging.
@@ -88,7 +90,9 @@ Ordre d'exécution **recommandé** (respecte les dépendances techniques). Les l
 - Observabilité : Sentry projet staging (Cloud Logging/Monitoring en complément immédiat, migration vers Grafana/Tempo/Loki prévue plus tard — ADR-017).
 - **Dépend de** : projets GCP créés (§2). **Sortie** : `terraform apply` provisionne staging ; un déploiement du kernel L0.5 (image vide) sur Cloud Run répond sur `/health`.
 
-### L0.6 — Identité (`auth`, `users`)
+### L0.6 — Identité (`auth`, `users`) ✅ _(fait, commit `14c4fd5`, avec des manques assumés — voir ci-dessous)_
+
+Fait : OTP téléphone = flux unique inscription/connexion (`core.otp_challenges`, indépendant de tout compte tant que non vérifié), JWT (jose) + refresh à rotation avec détection de rejeu (`core.refresh_tokens`, `family_id`), `GET/PATCH /me`. **Manques assumés, à faire en Phase 1** : un seul fournisseur SMS (`console`, pas de vrai envoi — pas encore les « 2 fournisseurs + repli » de l'ADR D5) ; pas de suivi d'appareil (`core.login_events` existe mais sans alerte nouvel appareil, pas de `user_devices`) ; pas d'attestation Play Integrity/App Attest ; pas de comptes staff opérationnels (`core.staff_users`/`staff_role_assignments` existent en schéma, aucun module dessus). _(Description originale du lot, conservée pour mémoire :)_
 
 - Tables `core.users`, `user_credentials`, `user_profiles`, `sessions`, `devices`, `otp_challenges`.
 - Flux OTP complet ([04-identity-access.md §2](../blueprint/04-identity-access.md)) : demande, envoi (2 fournisseurs SMS + repli), vérification, anti-abus (limites multi-clés, attestation d'appareil), création de session, JWT ES256/EdDSA + JWKS, refresh opaque avec rotation et détection de réutilisation.
@@ -96,7 +100,9 @@ Ordre d'exécution **recommandé** (respecte les dépendances techniques). Les l
 - `audit` : `ops.audit_logs` + décorateur d'audit sur actions sensibles.
 - **Dépend de** : L0.5. **Sortie** : inscription/connexion OTP fonctionnelle en local **et en staging sur appareil réel** (test S3 délivrabilité SMS commencé ici, en continu).
 
-### L0.7 — Tenancy & RBAC
+### L0.7 — Tenancy & RBAC ✅ _(fait, commit `14c4fd5`, testé manuellement de bout en bout)_
+
+Fait : `core.businesses`/`business_members`/`business_invitations`/`roles`/`permissions`/`role_permissions`, création d'entreprise (OWNER auto), invitation par téléphone + acceptation (numéro vérifié), changement de rôle avec **protection du dernier OWNER**, évaluation de permission avec cache Redis 5 min. **RLS activée et vérifiée** sur `core.businesses`/`core.business_members` (`FORCE ROW LEVEL SECURITY`, `thy_app` `NOBYPASSRLS`) : fuite testée à la fois via l'API (404 cross-tenant) et **directement en SQL** comme `thy_app` (0 ligne renvoyée pour le tenant B même sans clause `WHERE` côté application). Manque assumé : pas de lint de schéma automatisé en CI pour ce test (fait manuellement cette fois ; à automatiser — voir [10-testing.md §3](../blueprint/10-testing.md)). _(Description originale du lot, conservée pour mémoire :)_
 
 - Tables `core.businesses`, `business_locations`, `business_members`, `business_invitations`, `roles`, `permissions`, `role_permissions`, `staff_users`.
 - `businesses` : création, lieux, invitations (jeton haché, expirant, usage unique).
