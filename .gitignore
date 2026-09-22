@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.dart_tool/
+.pub-cache/
+.pub/
+build/
+**/ios/Pods/
+**/ios/.symlinks/
+**/android/.gradle/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/keys/**/*.pub
+
+# Build outputs
+dist/
+out/
+*.tsbuildinfo
+**/coverage/
+*.log
+
+# Flutter/Dart generated
+**/*.g.dart
+**/*.freezed.dart
+**/*.gr.dart
+**/ios/Flutter/Generated.xcconfig
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/android/local.properties
+**/*.iml
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Turborepo
+.turbo/
+
+# Misc
+*.local

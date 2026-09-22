@@ -1,0 +1,11 @@
+title = "THY gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fichiers d'exemple et documentation ne contenant aucune valeur réelle"
+paths = [
+  '''\.env\.example$''',
+  '''docs/.*''',
+]
