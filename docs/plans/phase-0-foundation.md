@@ -100,7 +100,7 @@ Fait : OTP téléphone = flux unique inscription/connexion (`core.otp_challenges
 - `audit` : `ops.audit_logs` + décorateur d'audit sur actions sensibles.
 - **Dépend de** : L0.5. **Sortie** : inscription/connexion OTP fonctionnelle en local **et en staging sur appareil réel** (test S3 délivrabilité SMS commencé ici, en continu).
 
-### L0.7 — Tenancy & RBAC ✅ _(fait, commit `14c4fd5`, testé manuellement de bout en bout)_
+### L0.7 — Tenancy & RBAC ✅ _(fait, commit `14c4fd5` ; surcharges de permissions par membre + permissions Business ajoutées le 2026-09-23 ; **prouvé par tests automatisés** : `backend/test/kernel/{auth,rbac,rls}.e2e-spec.ts`)_
 
 Fait : `core.businesses`/`business_members`/`business_invitations`/`roles`/`permissions`/`role_permissions`, création d'entreprise (OWNER auto), invitation par téléphone + acceptation (numéro vérifié), changement de rôle avec **protection du dernier OWNER**, évaluation de permission avec cache Redis 5 min. **RLS activée et vérifiée** sur `core.businesses`/`core.business_members` (`FORCE ROW LEVEL SECURITY`, `thy_app` `NOBYPASSRLS`) : fuite testée à la fois via l'API (404 cross-tenant) et **directement en SQL** comme `thy_app` (0 ligne renvoyée pour le tenant B même sans clause `WHERE` côté application). Manque assumé : pas de lint de schéma automatisé en CI pour ce test (fait manuellement cette fois ; à automatiser — voir [10-testing.md §3](../blueprint/10-testing.md)). _(Description originale du lot, conservée pour mémoire :)_
 

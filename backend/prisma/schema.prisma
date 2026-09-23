@@ -1,0 +1,293 @@
+// THY Business — client Prisma du schéma `biz`.
+//
+// IMPORTANT : ce fichier ne sert QU'À GÉNÉRER LE CLIENT de requêtes. Le DDL, les politiques RLS, les
+// FK composites et les index partiels vivent dans backend/migrations/0004_biz_init.sql (migrateur du
+// kernel). Ne jamais lancer `prisma migrate` : toute évolution de schéma passe par une migration SQL,
+// puis ce fichier est mis à jour à la main pour la refléter (garde-fou de dérive : `pnpm prisma:check`).
+//
+// Les utilisateurs et les entreprises n'existent pas ici : ils appartiennent au kernel (schéma core).
+// Les colonnes `businessId`, `soldBy`, `createdBy`… sont donc de simples uuid, sans relation Prisma.
+// Voir docs/plans/consolidation-strategy.md §2 et §3.1.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Surchargé à l'exécution par BizPrisma (`?schema=biz` ajouté à DATABASE_URL) — voir biz-prisma.service.ts.
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@unique([businessId, name])
+  @@index([businessId])
+  @@map("categories")
+}
+
+model Product {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId        String   @map("business_id") @db.Uuid
+  categoryId        String?  @map("category_id") @db.Uuid
+  name              String
+  sku               String?
+  barcode           String?
+  unit              String   @default("unite")
+  purchasePrice     Decimal  @default(0) @map("purchase_price") @db.Decimal(14, 2)
+  salePrice         Decimal  @map("sale_price") @db.Decimal(14, 2)
+  currentStock      Decimal  @default(0) @map("current_stock") @db.Decimal(14, 2)
+  lowStockThreshold Decimal? @map("low_stock_threshold") @db.Decimal(14, 2)
+  isActive          Boolean  @default(true) @map("is_active")
+  imageKey          String?  @map("image_key")
+  description       String?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  category  Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  movements InventoryMovement[]
+  saleItems SaleItem[]
+
+  @@index([businessId, name])
+  @@index([businessId, barcode])
+  @@map("products")
+}
+
+model InventoryMovement {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId    String   @map("business_id") @db.Uuid
+  productId     String   @map("product_id") @db.Uuid
+  type          String
+  quantity      Decimal  @db.Decimal(14, 2)
+  unitCost      Decimal? @map("unit_cost") @db.Decimal(14, 2)
+  referenceType String?  @map("reference_type")
+  referenceId   String?  @map("reference_id")
+  note          String?
+  createdBy     String   @map("created_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([businessId, productId, createdAt])
+  @@map("inventory_movements")
+}
+
+model Sale {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId      String   @map("business_id") @db.Uuid
+  customerId      String?  @map("customer_id") @db.Uuid
+  saleNumber      String   @map("sale_number")
+  // Clé générée par l'app : rejouer le même encaissement renvoie la vente d'origine.
+  clientRequestId String?  @map("client_request_id")
+  subtotal        Decimal  @db.Decimal(14, 2)
+  discountTotal   Decimal  @default(0) @map("discount_total") @db.Decimal(14, 2)
+  total           Decimal  @db.Decimal(14, 2)
+  amountPaid      Decimal  @default(0) @map("amount_paid") @db.Decimal(14, 2)
+  amountDue       Decimal  @default(0) @map("amount_due") @db.Decimal(14, 2)
+  status          String   @default("completed")
+  soldBy          String   @map("sold_by") @db.Uuid
+  soldAt          DateTime @default(now()) @map("sold_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items    SaleItem[]
+  payments Payment[]
+  credits  CustomerCredit[]
+  // Renseigné quand la vente a été créée par un paiement que le propriétaire a validé.
+  manualPayment ManualPayment?
+
+  @@unique([businessId, saleNumber])
+  @@unique([businessId, clientRequestId])
+  @@index([businessId, soldAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id                  String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId          String  @map("business_id") @db.Uuid
+  saleId              String  @map("sale_id") @db.Uuid
+  productId           String  @map("product_id") @db.Uuid
+  productNameSnapshot String  @map("product_name_snapshot")
+  unitPrice           Decimal @map("unit_price") @db.Decimal(14, 2)
+  unitCostSnapshot    Decimal @map("unit_cost_snapshot") @db.Decimal(14, 2)
+  quantity            Decimal @db.Decimal(14, 2)
+  discount            Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal           Decimal @map("line_total") @db.Decimal(14, 2)
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@map("sale_items")
+}
+
+model Payment {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId        String   @map("business_id") @db.Uuid
+  saleId            String   @map("sale_id") @db.Uuid
+  method            String
+  amount            Decimal  @db.Decimal(14, 2)
+  receivedBy        String   @map("received_by") @db.Uuid
+  providerReference String?  @map("provider_reference")
+  receivedAt        DateTime @default(now()) @map("received_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, saleId])
+  @@map("payments")
+}
+
+// Paiements directs (Orange Money, Mobile Money, code marchand) — ADR 0011 de thyBusiness.
+// Tout ce que le client voit (numéro, code, titulaire, consignes) est saisi par le propriétaire dans
+// l'app : rien n'est écrit en dur dans le code.
+model PaymentMethod {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId   String   @map("business_id") @db.Uuid
+  // orange_money | mobile_money | merchant_code | other
+  provider     String
+  displayName  String   @map("display_name")
+  accountName  String?  @map("account_name")
+  phoneNumber  String?  @map("phone_number")
+  merchantCode String?  @map("merchant_code")
+  instructions String?
+  ussdCode     String?  @map("ussd_code")
+  logoKey      String?  @map("logo_key")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  payments ManualPayment[]
+
+  @@index([businessId, isActive])
+  @@map("payment_methods")
+}
+
+// Paiement hors passerelle : le client envoie l'argent au propriétaire, le déclare, et le PROPRIÉTAIRE
+// vérifie qu'il est arrivé. Statut : pending → submitted → verified | rejected, ou cancelled.
+// L'index partiel unique « référence déjà utilisée » vit dans la migration SQL (Prisma ne sait pas l'exprimer).
+model ManualPayment {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId           String    @map("business_id") @db.Uuid
+  createdBy            String    @map("created_by") @db.Uuid
+  paymentMethodId      String?   @map("payment_method_id") @db.Uuid
+  methodProvider       String    @map("method_provider")
+  methodName           String    @map("method_name")
+  sentToHolder         String?   @map("sent_to_holder")
+  sentToPhone          String?   @map("sent_to_phone")
+  sentToCode           String?   @map("sent_to_code")
+  clientRequestId      String    @map("client_request_id")
+  amount               Decimal   @db.Decimal(14, 2)
+  currency             String    @default("GNF")
+  status               String    @default("pending")
+  checkout             Json
+  saleId               String?   @unique @map("sale_id") @db.Uuid
+  payerName            String?   @map("payer_name")
+  payerPhone           String?   @map("payer_phone")
+  transactionReference String?   @map("transaction_reference")
+  referenceKey         String?   @map("reference_key")
+  amountSent           Decimal?  @map("amount_sent") @db.Decimal(14, 2)
+  paidAt               DateTime? @map("paid_at")
+  proofKey             String?   @map("proof_key")
+  submittedAt          DateTime? @map("submitted_at")
+  verifiedAt           DateTime? @map("verified_at")
+  verifiedBy           String?   @map("verified_by") @db.Uuid
+  rejectedAt           DateTime? @map("rejected_at")
+  rejectedBy           String?   @map("rejected_by") @db.Uuid
+  rejectionReason      String?   @map("rejection_reason")
+  cancelledAt          DateTime? @map("cancelled_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  method PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  sale   Sale?          @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  @@unique([businessId, clientRequestId])
+  @@index([businessId, status, createdAt])
+  @@map("manual_payments")
+}
+
+model Customer {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId     String   @map("business_id") @db.Uuid
+  fullName       String   @map("full_name")
+  phone          String?
+  address        String?
+  notes          String?
+  currentBalance Decimal  @default(0) @map("current_balance") @db.Decimal(14, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  sales    Sale[]
+  credits  CustomerCredit[]
+  payments CreditPayment[]
+
+  @@index([businessId, fullName])
+  @@index([businessId, phone])
+  @@map("customers")
+}
+
+model CustomerCredit {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId      String    @map("business_id") @db.Uuid
+  customerId      String    @map("customer_id") @db.Uuid
+  saleId          String?   @map("sale_id") @db.Uuid
+  originalAmount  Decimal   @map("original_amount") @db.Decimal(14, 2)
+  remainingAmount Decimal   @map("remaining_amount") @db.Decimal(14, 2)
+  status          String    @default("open")
+  dueDate         DateTime? @map("due_date") @db.Date
+  note            String?
+  createdBy       String    @map("created_by") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  customer Customer        @relation(fields: [customerId], references: [id])
+  sale     Sale?           @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  payments CreditPayment[]
+
+  @@index([businessId, customerId])
+  @@index([businessId, status])
+  @@map("customer_credits")
+}
+
+model CreditPayment {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId       String   @map("business_id") @db.Uuid
+  customerId       String   @map("customer_id") @db.Uuid
+  customerCreditId String   @map("customer_credit_id") @db.Uuid
+  amount           Decimal  @db.Decimal(14, 2)
+  method           String
+  receivedBy       String   @map("received_by") @db.Uuid
+  note             String?
+  paidAt           DateTime @default(now()) @map("paid_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  customerCredit CustomerCredit @relation(fields: [customerCreditId], references: [id])
+
+  @@index([businessId, customerId])
+  @@map("credit_payments")
+}
+
+model Expense {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  businessId  String   @map("business_id") @db.Uuid
+  category    String
+  amount      Decimal  @db.Decimal(14, 2)
+  description String?
+  expenseDate DateTime @default(now()) @map("expense_date") @db.Date
+  recordedBy  String   @map("recorded_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([businessId, expenseDate])
+  @@map("expenses")
+}

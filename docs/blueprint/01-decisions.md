@@ -256,6 +256,8 @@ Région : **à mesurer** (§ décision restante) — candidates `europe-west1` (
 
 **Conséquence technique clé** (mécanisme détaillé en [consolidation-strategy.md](../plans/consolidation-strategy.md)) : les tables `core.*` (identité, tenancy, RBAC) sont **possédées par le kernel**, migrées en SQL brut comme n'importe quelle table du kernel — **aucun module métier ne les gère par son propre ORM**. Chaque module lit ces tables via des requêtes/vues en lecture, jamais via une migration de son propre schéma. C'est ce qui rend « un ORM par module » et « une seule identité » compatibles.
 
+**Précisions issues du premier portage (thyBusiness, 2026-09-23).** (a) Les migrations de **tous** les schémas (`core`, `biz`, et ceux des modules à venir) restent des fichiers SQL revus à la main, appliqués par le migrateur du kernel : un ORM n'est qu'un **client de requêtes** et ne crée jamais de schéma (pas de `prisma migrate`) ; un test de non-dérive le garantit. (b) Chaque table métier porte `business_id` avec RLS forcée et clés étrangères composites `(business_id, id)` ; l'ORM n'accède aux données que dans une transaction qui pose `app.business_id`.
+
 **Remise en cause si** : le nombre de modules portés dépasse 3–4 et la fragmentation des outils de migration/tests devient elle-même un risque opérationnel documenté (alors reconsidérer une convergence progressive, module par module, jamais en bloc).
 
 ## Décisions mineures (défauts proposés, modifiables sans débat)
