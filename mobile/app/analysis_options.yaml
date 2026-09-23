@@ -1,0 +1,17 @@
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    sort_child_properties_last: false
+
+# Largeur de ligne héritée de thyBusiness (le code y a été écrit à 100 colonnes).
+formatter:
+  page_width: 100

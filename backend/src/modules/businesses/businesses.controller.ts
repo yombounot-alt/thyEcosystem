@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put } from "@nestjs/common";
 import {
   Authenticated,
+  RequireMembership,
   RequirePermission,
   RequireVerifiedPhone,
 } from "../../kernel/auth/auth-types.js";
@@ -31,6 +32,13 @@ export class BusinessesController {
   @Authenticated()
   mine(@CurrentUser() user: AuthUser) {
     return this.businesses.listMine(user.id);
+  }
+
+  /** Fiche de l'entreprise : ouverte à tout membre (la lecture des données métier a ses propres permissions). */
+  @Get(":businessId")
+  @RequireMembership()
+  details(@Param("businessId") businessId: string, @CurrentUser() user: AuthUser) {
+    return this.businesses.details(user.id, businessId);
   }
 
   @Post(":businessId/activate")

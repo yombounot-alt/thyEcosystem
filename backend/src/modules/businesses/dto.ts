@@ -38,6 +38,11 @@ export class CreateBusinessDto {
   @IsOptional()
   @Matches(PHONE_E164)
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  address?: string;
 }
 
 export class InviteMemberDto {

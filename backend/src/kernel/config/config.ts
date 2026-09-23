@@ -22,7 +22,12 @@ export interface AppConfig {
   hmacPepper: string;
   defaultCountry: string;
   defaultCurrency: string;
-  sms: { driver: "console" };
+  /**
+   * `fixedOtp` : code OTP constant pour le développement et les tests d'intégration (mobile,
+   * scripts) — l'adaptateur `console` n'envoie aucun SMS, il n'y a donc rien à protéger ; refusé en
+   * production.
+   */
+  sms: { driver: "console"; fixedOtp?: string };
   /** Stockage de fichiers : seul le disque local existe (développement/tests) — voir StoragePort. */
   storage: { driver: "local"; localPath: string };
   rateLimitEnabled: boolean;
@@ -70,7 +75,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     hmacPepper: env.HMAC_PEPPER || DEV_SECRET + "-pepper",
     defaultCountry: (env.DEFAULT_COUNTRY ?? "GN").toUpperCase(),
     defaultCurrency: (env.DEFAULT_CURRENCY ?? "GNF").toUpperCase(),
-    sms: { driver: "console" },
+    sms: { driver: "console", ...(env.DEV_FIXED_OTP ? { fixedOtp: env.DEV_FIXED_OTP } : {}) },
     storage: { driver: "local", localPath: env.STORAGE_LOCAL_PATH || "./uploads" },
     rateLimitEnabled: bool(env.RATE_LIMIT_ENABLED, true),
   };
@@ -80,6 +85,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 }
 
 export function validateConfig(cfg: AppConfig): void {
+  if (cfg.sms.fixedOtp !== undefined && !/^\d{6}$/.test(cfg.sms.fixedOtp))
+    throw new Error("DEV_FIXED_OTP doit contenir exactement 6 chiffres");
   if (cfg.env !== "production") return;
   const weak = (s: string) => s.length < 32 || s.includes("dev-only");
   const errors: string[] = [];
@@ -89,6 +96,8 @@ export function validateConfig(cfg: AppConfig): void {
     errors.push(
       "MIGRATOR_DATABASE_URL doit être distinct de DATABASE_URL (rôles séparés, voir ADR-004)",
     );
+  if (cfg.sms.fixedOtp !== undefined)
+    errors.push("DEV_FIXED_OTP est interdit en production (code OTP prévisible)");
   if (cfg.sms.driver === "console")
     errors.push('SMS_DRIVER ne peut pas être "console" en production');
   if (cfg.storage.driver === "local")

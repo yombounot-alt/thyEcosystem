@@ -30,6 +30,7 @@ export type AuthedRequest = Request & {
 export const PUBLIC_KEY = "thy:public";
 export const AUTHENTICATED_KEY = "thy:authenticated";
 export const REQUIRE_PERMISSION_KEY = "thy:require-permission";
+export const REQUIRE_MEMBERSHIP_KEY = "thy:require-membership";
 export const REQUIRE_VERIFIED_PHONE_KEY = "thy:require-verified-phone";
 export const ALLOW_RESTRICTED_KEY = "thy:allow-restricted";
 export const RATE_LIMIT_KEY = "thy:rate-limit";
@@ -47,6 +48,12 @@ export const Authenticated = () => SetMetadata(AUTHENTICATED_KEY, true);
  * il n'accorde rien (voir docs/plans/consolidation-strategy.md §2).
  */
 export const RequirePermission = (code: string) => SetMetadata(REQUIRE_PERMISSION_KEY, code);
+/**
+ * Comme @RequirePermission, sans permission précise : il suffit d'être membre actif de l'entreprise
+ * visée (ex. lire la fiche de SA propre entreprise). Même résolution de l'entreprise, même 404
+ * pour un non-membre.
+ */
+export const RequireMembership = () => SetMetadata(REQUIRE_MEMBERSHIP_KEY, true);
 /** Exige un numéro de téléphone confirmé (actions sensibles : créer une entreprise, inviter…). */
 export const RequireVerifiedPhone = () => SetMetadata(REQUIRE_VERIFIED_PHONE_KEY, true);
 /** Autorise un compte suspendu à appeler cette route non-GET (ex. logout). */

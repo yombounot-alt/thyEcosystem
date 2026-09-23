@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { CONFIG, type AppConfig } from "../../kernel/config/config.js";
 import { Db } from "../../kernel/db/db.service.js";
 import { tooMany, unprocessable } from "../../kernel/errors.js";
 import { SMS_SENDER, type SmsSenderPort } from "../../kernel/notifications/sms-sender.port.js";
@@ -21,6 +22,7 @@ export class OtpService {
     private readonly db: Db,
     private readonly crypto: CryptoService,
     @Inject(SMS_SENDER) private readonly sms: SmsSenderPort,
+    @Inject(CONFIG) private readonly cfg: AppConfig,
   ) {}
 
   async request(phone: string): Promise<void> {
@@ -34,7 +36,7 @@ export class OtpService {
       throw tooMany("OTP_RATE_LIMITED", "Trop de codes demandés, réessayez plus tard", 600);
     }
 
-    const code = this.crypto.randomOtp();
+    const code = this.cfg.sms.fixedOtp ?? this.crypto.randomOtp();
     await this.db.tx(async (tx) => {
       await tx.query(
         `UPDATE core.otp_challenges SET consumed_at = now() WHERE phone = $1 AND purpose = $2 AND consumed_at IS NULL`,

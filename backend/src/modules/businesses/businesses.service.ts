@@ -105,11 +105,12 @@ export class BusinessesService {
         currency: string;
         timezone: string;
         phone: string | null;
+        address: string | null;
         createdAt: Date;
       }>(
-        `INSERT INTO core.businesses (name, business_type, country, currency, timezone, phone, owner_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING id, name, business_type AS "businessType", country, currency, timezone, phone, created_at AS "createdAt"`,
+        `INSERT INTO core.businesses (name, business_type, country, currency, timezone, phone, address, owner_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING id, name, business_type AS "businessType", country, currency, timezone, phone, address, created_at AS "createdAt"`,
         [
           dto.name.trim(),
           dto.businessType ?? null,
@@ -117,6 +118,7 @@ export class BusinessesService {
           dto.currency ?? this.cfg.defaultCurrency,
           dto.timezone ?? "Africa/Conakry",
           dto.phone ?? null,
+          dto.address?.trim() || null,
           userId,
         ],
       );
@@ -137,6 +139,22 @@ export class BusinessesService {
     });
     const session = await this.auth.reissueWithBusiness(userId, business.id);
     return { business, ...session };
+  }
+
+  /** Fiche d'une entreprise (le garde a déjà vérifié que l'appelant en est membre). */
+  async details(userId: string, businessId: string) {
+    const row = await this.db
+      .withTenant({ userId }, (tx) =>
+        tx.query(
+          `SELECT id, name, business_type AS "businessType", country, currency, timezone, phone, address,
+                  created_at AS "createdAt"
+             FROM core.businesses WHERE id = $1`,
+          [businessId],
+        ),
+      )
+      .then((r) => r.rows[0]);
+    if (!row) throw notFound();
+    return row;
   }
 
   /** Entreprises dont l'appelant est membre (utile pour un sélecteur, en plus de GET /me/businesses). */

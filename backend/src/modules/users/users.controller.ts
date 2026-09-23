@@ -12,13 +12,13 @@ export class UsersController {
   @Get()
   @Authenticated()
   me(@CurrentUser() user: AuthUser) {
-    return this.users.me(user.id);
+    return this.users.me(user.id, user.activeBusinessId);
   }
 
   @Patch()
   @Authenticated()
   update(@CurrentUser() user: AuthUser, @Body() dto: UpdateMeDto) {
-    return this.users.update(user.id, dto);
+    return this.users.update(user.id, dto, user.activeBusinessId);
   }
 
   @Get("businesses")

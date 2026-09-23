@@ -10,6 +10,7 @@ import {
   AUTHENTICATED_KEY,
   PUBLIC_KEY,
   RATE_LIMIT_KEY,
+  REQUIRE_MEMBERSHIP_KEY,
   REQUIRE_PERMISSION_KEY,
   REQUIRE_VERIFIED_PHONE_KEY,
   type AuthedRequest,
@@ -132,7 +133,8 @@ export class AccessGuard implements CanActivate {
 
     const authenticated = meta<boolean>(this.reflector, AUTHENTICATED_KEY, ctx);
     const requiredPermission = meta<string>(this.reflector, REQUIRE_PERMISSION_KEY, ctx);
-    if (!authenticated && !requiredPermission)
+    const requireMembership = meta<boolean>(this.reflector, REQUIRE_MEMBERSHIP_KEY, ctx);
+    if (!authenticated && !requiredPermission && !requireMembership)
       throw forbidden("ROUTE_NOT_ANNOTATED", "Accès non défini pour cette route");
 
     // État du compte : un compte SUSPENDED reste en lecture seule (docs/blueprint/04-identity-access.md §6).
@@ -148,7 +150,8 @@ export class AccessGuard implements CanActivate {
       throw forbidden("PHONE_NOT_VERIFIED", "Confirmez votre numéro de téléphone pour continuer");
     }
 
-    if (!requiredPermission) return true; // @Authenticated() seul : aucune entreprise à vérifier
+    // @Authenticated() seul : aucune entreprise à vérifier
+    if (!requiredPermission && !requireMembership) return true;
 
     // Entreprise visée : le paramètre de route s'il existe, sinon le claim du jeton (routes « à plat »).
     const routeBusinessId = req.params["businessId"];
@@ -168,7 +171,7 @@ export class AccessGuard implements CanActivate {
       throw forbidden("NOT_A_MEMBER", "Vous n'êtes plus membre de cette entreprise.");
     }
     const effective = await this.permissions.getEffectivePermissions(membership);
-    if (!effective.has(requiredPermission))
+    if (requiredPermission && !effective.has(requiredPermission))
       throw forbidden("FORBIDDEN_PERMISSION", "Action non autorisée pour votre rôle");
 
     req.membership = membership;
