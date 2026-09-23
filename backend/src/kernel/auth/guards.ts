@@ -150,15 +150,29 @@ export class AccessGuard implements CanActivate {
 
     if (!requiredPermission) return true; // @Authenticated() seul : aucune entreprise à vérifier
 
-    const businessId = req.params["businessId"];
-    if (typeof businessId !== "string" || !businessId)
-      throw new Error("@RequirePermission utilisé sur une route sans paramètre :businessId");
+    // Entreprise visée : le paramètre de route s'il existe, sinon le claim du jeton (routes « à plat »).
+    const routeBusinessId = req.params["businessId"];
+    const fromRoute = typeof routeBusinessId === "string" && routeBusinessId.length > 0;
+    const businessId = fromRoute ? routeBusinessId : user.activeBusinessId;
+    if (!businessId)
+      throw forbidden(
+        "NO_ACTIVE_BUSINESS",
+        "Aucune entreprise active : sélectionnez une entreprise.",
+      );
+
     const membership = await this.permissions.getMembership(user.id, businessId);
-    if (!membership) throw notFound(); // pas membre ⇒ 404, jamais 403 (n'expose pas l'existence de l'entreprise)
-    const allowed = await this.permissions.hasPermission(membership.roleId, requiredPermission);
-    if (!allowed) throw forbidden("FORBIDDEN_PERMISSION", "Action non autorisée pour votre rôle");
+    if (!membership) {
+      // Paramètre de route : 404, jamais 403 (n'expose pas l'existence de l'entreprise).
+      // Claim du jeton : l'utilisateur a été retiré de l'entreprise depuis l'émission du jeton.
+      if (fromRoute) throw notFound();
+      throw forbidden("NOT_A_MEMBER", "Vous n'êtes plus membre de cette entreprise.");
+    }
+    const effective = await this.permissions.getEffectivePermissions(membership);
+    if (!effective.has(requiredPermission))
+      throw forbidden("FORBIDDEN_PERMISSION", "Action non autorisée pour votre rôle");
 
     req.membership = membership;
+    req.permissions = effective;
     return true;
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put } from "@nestjs/common";
 import {
   Authenticated,
   RequirePermission,
@@ -12,6 +12,7 @@ import {
   ChangeMemberRoleDto,
   CreateBusinessDto,
   InviteMemberDto,
+  SetPermissionOverridesDto,
 } from "./dto.js";
 
 @Controller("businesses")
@@ -64,6 +65,16 @@ export class BusinessesController {
     @Body() dto: ChangeMemberRoleDto,
   ) {
     return this.businesses.changeMemberRole(businessId, userId, dto);
+  }
+
+  @Put(":businessId/members/:userId/permissions")
+  @RequirePermission("members:manage")
+  setPermissions(
+    @Param("businessId") businessId: string,
+    @Param("userId") userId: string,
+    @Body() dto: SetPermissionOverridesDto,
+  ) {
+    return this.businesses.setPermissionOverrides(businessId, userId, dto.overrides);
   }
 }
 

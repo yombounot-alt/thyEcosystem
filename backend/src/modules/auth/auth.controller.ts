@@ -30,7 +30,7 @@ export class AuthController {
   @HttpCode(200)
   @RateLimit({ name: "refresh", limit: 30, windowSec: 60, by: "ip" })
   refresh(@Body() dto: RefreshDto, @Meta() meta: ClientMeta) {
-    return this.auth.refresh(dto.refreshToken, meta);
+    return this.auth.refresh(dto.refreshToken, meta, dto.businessId);
   }
 
   @Post("logout")

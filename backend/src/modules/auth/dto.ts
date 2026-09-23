@@ -1,4 +1,4 @@
-import { IsString, Length, Matches } from "class-validator";
+import { IsOptional, IsString, IsUUID, Length, Matches } from "class-validator";
 
 export const PHONE_E164 = /^\+[1-9][0-9]{6,14}$/;
 
@@ -21,4 +21,9 @@ export class RefreshDto {
   @IsString()
   @Length(20, 200)
   refreshToken!: string;
+
+  /** Entreprise active à conserver dans le nouveau jeton d'accès (vérifiée en base). */
+  @IsOptional()
+  @IsUUID()
+  businessId?: string;
 }

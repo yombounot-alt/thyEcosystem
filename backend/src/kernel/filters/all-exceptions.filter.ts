@@ -15,6 +15,17 @@ const isPgError = (e: unknown): e is PgError =>
   typeof (e as PgError).code === "string" &&
   /^[0-9A-Z]{5}$/.test((e as PgError).code!);
 
+interface PrismaKnownError {
+  name: string;
+  code: string;
+  message: string;
+}
+const isPrismaKnownError = (e: unknown): e is PrismaKnownError =>
+  typeof e === "object" &&
+  e !== null &&
+  (e as PrismaKnownError).name === "PrismaClientKnownRequestError" &&
+  typeof (e as PrismaKnownError).code === "string";
+
 const HTTP_CODES: Record<number, string> = {
   400: "BAD_REQUEST",
   401: "AUTH_UNAUTHENTICATED",
@@ -64,6 +75,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
               ? "Contenu trop volumineux"
               : exception.message;
       }
+    } else if (isPrismaKnownError(exception)) {
+      // Erreurs Prisma non déjà converties par le service métier (le kernel ne dépend pas de Prisma :
+      // détection par nom/code). P2023 = identifiant mal formé (UUID) ⇒ ressource introuvable.
+      ({ status, code, message } = this.mapPrisma(exception));
+      if (status === 500)
+        this.logger.error(`prisma ${exception.code}: ${exception.message}`, undefined, "db");
     } else if (isPgError(exception)) {
       ({ status, code, message } = this.mapPg(exception));
       if (status === 500)
@@ -79,6 +96,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
     res.status(status).json({
       error: { code, message, ...(details !== undefined ? { details } : {}), requestId: req.id },
     });
+  }
+
+  private mapPrisma(e: PrismaKnownError): { status: number; code: string; message: string } {
+    switch (e.code) {
+      case "P2002":
+        return { status: 409, code: "CONFLICT", message: "Cette ressource existe déjà" };
+      case "P2003":
+        return {
+          status: 409,
+          code: "CONFLICT",
+          message: "Cette ressource est référencée ailleurs",
+        };
+      case "P2023":
+      case "P2025":
+        return { status: 404, code: "NOT_FOUND", message: "Ressource introuvable" };
+      default:
+        return { status: 500, code: "INTERNAL_ERROR", message: "Une erreur interne est survenue" };
+    }
   }
 
   private mapPg(e: PgError): { status: number; code: string; message: string } {

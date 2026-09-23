@@ -5,6 +5,10 @@ import { Db } from "../../kernel/db/db.service.js";
 import { badRequest, conflict, forbidden, notFound, unprocessable } from "../../kernel/errors.js";
 import { OutboxService } from "../../kernel/infra.services.js";
 import { CryptoService } from "../../kernel/security/crypto.service.js";
+import {
+  NON_OVERRIDABLE_PERMISSIONS,
+  PermissionsService,
+} from "../../kernel/auth/permissions.service.js";
 import { addDays } from "../../kernel/util.js";
 import type {
   AcceptInvitationDto,
@@ -24,8 +28,59 @@ export class BusinessesService {
     private readonly crypto: CryptoService,
     private readonly outbox: OutboxService,
     private readonly auth: AuthService,
+    private readonly permissions: PermissionsService,
     @Inject(CONFIG) private readonly cfg: AppConfig,
   ) {}
+
+  /**
+   * Écarts individuels de permissions d'un membre (« configurables individuellement », cahier des
+   * charges THY Business écran 23). Un objet vide revient aux permissions par défaut du rôle. Le
+   * propriétaire garde toujours toutes les permissions, et `members:manage`/`subscription:manage`
+   * ne sont jamais surchargeables. Effectif immédiatement : les surcharges sont relues en base à
+   * chaque requête.
+   */
+  async setPermissionOverrides(
+    businessId: string,
+    targetUserId: string,
+    overrides: Record<string, boolean>,
+  ) {
+    const known = new Set(await this.permissions.listPermissionCodes());
+    for (const [code, value] of Object.entries(overrides)) {
+      if (typeof value !== "boolean")
+        throw badRequest("INVALID_OVERRIDE", `La valeur de « ${code} » doit être true ou false.`);
+      if (!known.has(code)) throw badRequest("UNKNOWN_PERMISSION", `Permission inconnue : ${code}`);
+      if ((NON_OVERRIDABLE_PERMISSIONS as readonly string[]).includes(code))
+        throw badRequest("PERMISSION_NOT_OVERRIDABLE", `« ${code} » ne peut pas être surchargée.`);
+    }
+    return this.db.withTenant({ businessId }, async (tx) => {
+      const target = await this.db.one<{ roleCode: string }>(
+        `SELECT r.code AS "roleCode" FROM core.business_members m JOIN core.roles r ON r.id = m.role_id
+          WHERE m.business_id = $1 AND m.user_id = $2`,
+        [businessId, targetUserId],
+        tx,
+      );
+      if (!target) throw notFound();
+      if (target.roleCode === "OWNER")
+        throw conflict(
+          "OWNER_PERMISSIONS_FIXED",
+          "Le propriétaire a toujours toutes les permissions.",
+        );
+      const value = Object.keys(overrides).length > 0 ? JSON.stringify(overrides) : null;
+      await tx.query(
+        `UPDATE core.business_members SET permission_overrides = $3::jsonb WHERE business_id = $1 AND user_id = $2`,
+        [businessId, targetUserId, value],
+      );
+      await this.outbox.emit(
+        tx,
+        "MEMBER_PERMISSIONS_CHANGED",
+        "business",
+        businessId,
+        { businessId, userId: targetUserId },
+        businessId,
+      );
+      return { businessId, userId: targetUserId, overrides };
+    });
+  }
 
   private async roleByCode(code: string): Promise<RoleRow> {
     const role = await this.db.one<RoleRow>(
@@ -110,7 +165,8 @@ export class BusinessesService {
     return this.db
       .withTenant({ businessId }, (tx) =>
         tx.query(
-          `SELECT m.id, m.user_id AS "userId", u.full_name AS "fullName", u.phone, r.code AS "roleCode", m.status, m.created_at AS "createdAt"
+          `SELECT m.id, m.user_id AS "userId", u.full_name AS "fullName", u.phone, r.code AS "roleCode", m.status,
+                  m.permission_overrides AS "permissionOverrides", m.created_at AS "createdAt"
              FROM core.business_members m
              JOIN core.users u ON u.id = m.user_id
              JOIN core.roles r ON r.id = m.role_id

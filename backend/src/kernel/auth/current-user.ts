@@ -15,6 +15,24 @@ export const CurrentMembership = createParamDecorator(
   },
 );
 
+/** Identifiant de l'entreprise de la requête (adhésion déjà vérifiée en base par AccessGuard). */
+export const CurrentBusiness = createParamDecorator((_: unknown, ctx: ExecutionContext): string => {
+  const req = ctx.switchToHttp().getRequest<AuthedRequest>();
+  if (!req.membership)
+    throw new Error("CurrentBusiness utilisé sur une route sans @RequirePermission");
+  return req.membership.businessId;
+});
+
+/** Permissions effectives (rôle + surcharges) du membre courant, pour les contrôles fins dans un service. */
+export const CurrentPermissions = createParamDecorator(
+  (_: unknown, ctx: ExecutionContext): string[] => {
+    const req = ctx.switchToHttp().getRequest<AuthedRequest>();
+    if (!req.permissions)
+      throw new Error("CurrentPermissions utilisé sur une route sans @RequirePermission");
+    return [...req.permissions];
+  },
+);
+
 /** IP et appareil de la requête (pour l'anti-fraude). */
 export interface ClientMeta {
   ip?: string;

@@ -23,6 +23,8 @@ export interface AppConfig {
   defaultCountry: string;
   defaultCurrency: string;
   sms: { driver: "console" };
+  /** Stockage de fichiers : seul le disque local existe (développement/tests) — voir StoragePort. */
+  storage: { driver: "local"; localPath: string };
   rateLimitEnabled: boolean;
 }
 
@@ -69,6 +71,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     defaultCountry: (env.DEFAULT_COUNTRY ?? "GN").toUpperCase(),
     defaultCurrency: (env.DEFAULT_CURRENCY ?? "GNF").toUpperCase(),
     sms: { driver: "console" },
+    storage: { driver: "local", localPath: env.STORAGE_LOCAL_PATH || "./uploads" },
     rateLimitEnabled: bool(env.RATE_LIMIT_ENABLED, true),
   };
 
@@ -88,6 +91,10 @@ export function validateConfig(cfg: AppConfig): void {
     );
   if (cfg.sms.driver === "console")
     errors.push('SMS_DRIVER ne peut pas être "console" en production');
+  if (cfg.storage.driver === "local")
+    errors.push(
+      "Le stockage sur disque local est interdit en production (adaptateur S3/GCS requis, ADR-012)",
+    );
   if (!cfg.rateLimitEnabled)
     errors.push("RATE_LIMIT_ENABLED ne peut pas être désactivé en production");
   if (errors.length)

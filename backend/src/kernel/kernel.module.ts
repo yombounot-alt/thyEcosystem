@@ -10,6 +10,7 @@ import { AllExceptionsFilter } from "./filters/all-exceptions.filter.js";
 import { AuditService, IdempotencyService, OutboxService } from "./infra.services.js";
 import { AppLogger } from "./logger.js";
 import { NotificationsModule } from "./notifications/notifications.module.js";
+import { StorageModule } from "./storage/storage.module.js";
 import { RedisService } from "./redis/redis.service.js";
 import { CryptoService } from "./security/crypto.service.js";
 
@@ -20,7 +21,7 @@ import { CryptoService } from "./security/crypto.service.js";
  */
 @Global()
 @Module({
-  imports: [NotificationsModule],
+  imports: [NotificationsModule, StorageModule],
   providers: [
     { provide: CONFIG, useFactory: () => loadConfig() },
     Db,
@@ -51,6 +52,7 @@ import { CryptoService } from "./security/crypto.service.js";
     IdempotencyService,
     AppLogger,
     NotificationsModule,
+    StorageModule,
   ],
 })
 export class KernelModule {}

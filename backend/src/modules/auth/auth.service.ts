@@ -81,7 +81,7 @@ export class AuthService {
     return this.issueSession(user, meta, randomUUID());
   }
 
-  async refresh(refreshToken: string, meta: ClientMeta): Promise<Session> {
+  async refresh(refreshToken: string, meta: ClientMeta, businessId?: string): Promise<Session> {
     const hash = this.crypto.tokenHash(refreshToken);
     const row = await this.db.one<{
       id: string;
@@ -125,7 +125,7 @@ export class AuthService {
     );
     if (!user || user.status === "BANNED" || user.status === "DELETED")
       throw forbidden("ACCOUNT_DISABLED", "Compte désactivé");
-    return this.issueSession(user, meta, row.familyId, row.id);
+    return this.issueSession(user, meta, row.familyId, row.id, businessId);
   }
 
   async logout(refreshToken: string, userId: string): Promise<void> {
@@ -145,13 +145,21 @@ export class AuthService {
   async reissueWithBusiness(
     userId: string,
     businessId: string,
-  ): Promise<{ accessToken: string; expiresIn: number }> {
+  ): Promise<{ accessToken: string; expiresIn: number; role: string; permissions: string[] }> {
     const membership = await this.permissions.getMembership(userId, businessId);
     if (!membership) throw notFound();
     const state = await this.states.get(userId);
     if (!state) throw unauthorized();
     const accessToken = await this.tokens.signAccess(userId, state.tokenVersion, businessId);
-    return { accessToken, expiresIn: this.cfg.jwt.accessTtlSec };
+    // Rôle et permissions effectives : l'app s'en sert pour masquer ce que l'utilisateur ne peut
+    // pas faire (l'autorité reste le serveur, qui les relit à chaque requête).
+    const permissions = [...(await this.permissions.getEffectivePermissions(membership))].sort();
+    return {
+      accessToken,
+      expiresIn: this.cfg.jwt.accessTtlSec,
+      role: membership.roleCode,
+      permissions,
+    };
   }
 
   private async issueSession(
@@ -159,6 +167,7 @@ export class AuthService {
     meta: ClientMeta,
     familyId: string,
     replacedId?: string,
+    businessId?: string,
   ): Promise<Session> {
     const refreshToken = this.crypto.randomToken();
     const ipHash = this.crypto.ipHash(meta.ip);
@@ -185,7 +194,11 @@ export class AuthService {
         [user.id, ipHash],
       );
     });
-    const accessToken = await this.tokens.signAccess(user.id, user.tokenVersion, null);
+    // Entreprise active conservée au renouvellement, seulement si l'utilisateur en est toujours
+    // membre (sinon le claim est omis et le client en sélectionne une).
+    const activeBusinessId =
+      businessId && (await this.permissions.getMembership(user.id, businessId)) ? businessId : null;
+    const accessToken = await this.tokens.signAccess(user.id, user.tokenVersion, activeBusinessId);
     return {
       accessToken,
       refreshToken,

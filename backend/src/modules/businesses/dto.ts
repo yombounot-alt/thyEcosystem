@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString, Length, Matches, MaxLength } from "class-validator";
+import { IsIn, IsObject, IsOptional, IsString, Length, Matches, MaxLength } from "class-validator";
 import { PHONE_E164 } from "../auth/dto.js";
 
 /** Rôles assignables via l'API. OWNER en est exclu : le transfert de propriété est un flux dédié
@@ -57,4 +57,14 @@ export class AcceptInvitationDto {
 export class ChangeMemberRoleDto {
   @IsIn(ASSIGNABLE_ROLES)
   roleCode!: (typeof ASSIGNABLE_ROLES)[number];
+}
+
+/**
+ * Écarts individuels par rapport aux permissions du rôle : `{ "sales:refund": true, "credits:manage": false }`.
+ * Objet vide = retour aux permissions par défaut du rôle. Les clés sont validées côté service
+ * contre le catalogue (`core.permissions`).
+ */
+export class SetPermissionOverridesDto {
+  @IsObject()
+  overrides!: Record<string, boolean>;
 }
