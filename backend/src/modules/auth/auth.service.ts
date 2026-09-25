@@ -184,10 +184,12 @@ export class AuthService {
           addDays(new Date(), this.cfg.jwt.refreshTtlDays),
         ],
       );
+      const insertedId = inserted.rows[0]?.id;
+      if (!insertedId) throw new Error("issueSession: insertion refresh_tokens sans résultat");
       if (replacedId)
         await tx.query("UPDATE core.refresh_tokens SET replaced_by = $2 WHERE id = $1", [
           replacedId,
-          inserted.rows[0]!.id,
+          insertedId,
         ]);
       await tx.query(
         "INSERT INTO core.login_events (user_id, ip_hash, success) VALUES ($1, $2, true)",

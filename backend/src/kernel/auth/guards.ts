@@ -20,6 +20,11 @@ import { PermissionsService } from "./permissions.service.js";
 import { TokenService } from "./token.service.js";
 import { UserStateService } from "./user-state.service.js";
 
+/**
+ * T n'est pas inféré depuis un argument (comme `Reflector#getAllAndOverride` lui-même) : chaque
+ * appel le précise explicitement (`meta<boolean>(...)`), ce qui est le but recherché, pas un oubli.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 function meta<T>(reflector: Reflector, key: string, ctx: ExecutionContext): T | undefined {
   return reflector.getAllAndOverride<T>(key, [ctx.getHandler(), ctx.getClass()]);
 }
@@ -42,7 +47,7 @@ export class AuthGuard implements CanActivate {
     if (!claims) throw unauthorized("AUTH_INVALID_TOKEN", "Session expirée ou invalide");
 
     const state = await this.states.get(claims.sub);
-    if (!state || state.tokenVersion !== claims.ver)
+    if (state?.tokenVersion !== claims.ver)
       throw unauthorized("AUTH_INVALID_TOKEN", "Session expirée ou invalide");
     if (state.status === "BANNED" || state.status === "DELETED")
       throw forbidden("ACCOUNT_DISABLED", "Compte désactivé");
@@ -83,7 +88,8 @@ export class RateLimitGuard implements CanActivate {
         subject = ip;
         break;
       case "ip+phone": {
-        const phone = String((req.body as { phone?: unknown } | undefined)?.phone ?? "");
+        const body = req.body as { phone?: unknown } | undefined;
+        const phone = typeof body?.phone === "string" ? body.phone : "";
         subject = `${ip}:${sha256(phone).toString("hex").slice(0, 16)}`;
         break;
       }
@@ -130,6 +136,9 @@ export class AccessGuard implements CanActivate {
     if (meta<boolean>(this.reflector, PUBLIC_KEY, ctx)) return true;
     const req = ctx.switchToHttp().getRequest<AuthedRequest>();
     const user = req.user;
+    // Route non publique (le PUBLIC_KEY ci-dessus l'aurait court-circuitée) : AuthGuard, qui
+    // tourne avant (voir kernel.module.ts), a nécessairement déjà posé req.user.
+    if (!user) throw unauthorized();
 
     const authenticated = meta<boolean>(this.reflector, AUTHENTICATED_KEY, ctx);
     const requiredPermission = meta<string>(this.reflector, REQUIRE_PERMISSION_KEY, ctx);
@@ -154,7 +163,7 @@ export class AccessGuard implements CanActivate {
     if (!requiredPermission && !requireMembership) return true;
 
     // Entreprise visée : le paramètre de route s'il existe, sinon le claim du jeton (routes « à plat »).
-    const routeBusinessId = req.params["businessId"];
+    const routeBusinessId = req.params.businessId;
     const fromRoute = typeof routeBusinessId === "string" && routeBusinessId.length > 0;
     const businessId = fromRoute ? routeBusinessId : user.activeBusinessId;
     if (!businessId)

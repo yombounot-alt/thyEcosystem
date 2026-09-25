@@ -6,7 +6,10 @@ import type { SmsSenderPort } from "./sms-sender.port.js";
 export class ConsoleSmsSenderAdapter implements SmsSenderPort {
   private readonly logger = new Logger("sms:console");
 
-  async sendOtp(phoneE164: string, code: string): Promise<void> {
+  // Pas de `async` : rien ici n'attend quoi que ce soit (voir SmsSenderPort — un adaptateur qui
+  // enverrait un vrai SMS, lui, aurait un corps async).
+  sendOtp(phoneE164: string, code: string): Promise<void> {
     this.logger.log(`OTP pour ${phoneE164} : ${code}`);
+    return Promise.resolve();
   }
 }

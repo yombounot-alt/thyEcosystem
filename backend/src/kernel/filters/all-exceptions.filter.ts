@@ -9,11 +9,11 @@ interface PgError {
   constraint?: string;
   message: string;
 }
-const isPgError = (e: unknown): e is PgError =>
-  typeof e === "object" &&
-  e !== null &&
-  typeof (e as PgError).code === "string" &&
-  /^[0-9A-Z]{5}$/.test((e as PgError).code!);
+function isPgError(e: unknown): e is PgError {
+  if (typeof e !== "object" || e === null) return false;
+  const err = e as PgError;
+  return typeof err.code === "string" && /^[0-9A-Z]{5}$/.test(err.code);
+}
 
 interface PrismaKnownError {
   name: string;
@@ -62,7 +62,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const body = exception.getResponse() as { message?: unknown };
-      if (status === 400 && Array.isArray(body?.message)) {
+      if (status === 400 && Array.isArray(body.message)) {
         code = "VALIDATION_FAILED";
         message = "Données invalides";
         details = body.message;

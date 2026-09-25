@@ -22,8 +22,14 @@ export interface Queryable {
 export type Tx = Queryable;
 
 const camel = (k: string) => k.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+// T n'est pas inféré (comme `meta<T>` dans kernel/auth/guards.ts) : `query<T>(...)` le précise
+// explicitement. Cette fonction est aussi l'unique frontière entre les lignes non typées renvoyées
+// par `pg` et le reste de l'application typé — le `any` de `Row` (voir sa définition ci-dessus) y
+// est donc attendu, jamais un oubli.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 function camelizeRow<T>(row: Row): T {
   const out: Row = {};
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- voir le commentaire ci-dessus
   for (const k of Object.keys(row)) out[camel(k)] = row[k];
   return out as T;
 }
@@ -34,7 +40,12 @@ function wrap(runner: {
   return {
     async query<T = Row>(sql: string, params?: unknown[]): Promise<QueryResult<T>> {
       const r = await runner.query(sql, params);
-      return { rows: r.rows.map((row) => camelizeRow<T>(row)), rowCount: r.rowCount ?? 0 };
+      return {
+        // `pg` ne type pas les lignes qu'il renvoie ; voir le commentaire sur `camelizeRow`.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        rows: r.rows.map((row) => camelizeRow<T>(row)),
+        rowCount: r.rowCount ?? 0,
+      };
     },
   };
 }

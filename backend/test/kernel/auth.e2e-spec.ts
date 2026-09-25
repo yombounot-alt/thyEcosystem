@@ -23,7 +23,9 @@ describe("Auth — OTP, refresh, déconnexion (e2e)", () => {
 
   it("inscription et connexion sont le même flux : OTP → session, puis /me", async () => {
     const phone = uniquePhone();
-    await otpRequest(phone).expect((r) => expect(r.status).toBeLessThan(300));
+    await otpRequest(phone).expect((r) => {
+      expect(r.status).toBeLessThan(300);
+    });
 
     const bad = await otpVerify(phone, "000000");
     expect([400, 422]).toContain(bad.status);
@@ -68,7 +70,9 @@ describe("Auth — OTP, refresh, déconnexion (e2e)", () => {
   it("limite le nombre de codes demandés pour un même numéro", async () => {
     const phone = uniquePhone();
     for (let i = 0; i < 3; i++)
-      await otpRequest(phone).expect((r) => expect(r.status).toBeLessThan(300));
+      await otpRequest(phone).expect((r) => {
+        expect(r.status).toBeLessThan(300);
+      });
     const res = await otpRequest(phone);
     expect(res.status).toBe(429);
     expect(res.body.error.code).toBe("OTP_RATE_LIMITED");

@@ -10,7 +10,17 @@ export class CustomersService {
   constructor(private readonly biz: BizPrisma) {}
 
   create(businessId: string, dto: CreateCustomerDto) {
-    return this.biz.run(businessId, (tx) => tx.customer.create({ data: { businessId, ...dto } }));
+    return this.biz.run(businessId, (tx) =>
+      tx.customer.create({
+        data: {
+          businessId,
+          fullName: dto.fullName,
+          phone: dto.phone,
+          address: dto.address,
+          notes: dto.notes,
+        },
+      }),
+    );
   }
 
   async findAll(businessId: string, query: ListCustomersQuery) {
@@ -66,7 +76,7 @@ export class CustomersService {
       // P2003 (Prisma) ou 23503 (clé étrangère PostgreSQL, remontée telle quelle par les FK composites).
       if (
         (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") ||
-        (error instanceof Prisma.PrismaClientUnknownRequestError && /23503/.test(error.message))
+        (error instanceof Prisma.PrismaClientUnknownRequestError && error.message.includes("23503"))
       ) {
         throw new ConflictException(
           "Ce client a des ventes ou des crédits associés, il ne peut pas être supprimé.",

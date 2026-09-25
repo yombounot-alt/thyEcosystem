@@ -26,6 +26,9 @@ export class RedisService implements OnModuleDestroy {
 
   async ping(): Promise<boolean> {
     try {
+      // Les types d'ioredis promettent "PONG" (seule valeur possible du protocole Redis), mais on
+      // vérifie quand même : ceci est le SEUL point de vérité de la joignabilité de Redis.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       return (await this.client.ping()) === "PONG";
     } catch {
       return false;
@@ -35,8 +38,9 @@ export class RedisService implements OnModuleDestroy {
   /** Compteur à fenêtre fixe. Retourne la valeur et le TTL restant (s). */
   async incrWindow(key: string, windowSec: number): Promise<{ count: number; ttl: number }> {
     const res = await this.client.multi().incr(key).expire(key, windowSec, "NX").ttl(key).exec();
-    if (!res) throw new Error("redis multi failed");
-    return { count: Number(res[0]![1]), ttl: Math.max(1, Number(res[2]![1])) };
+    const [incrRes, , ttlRes] = res ?? [];
+    if (!incrRes || !ttlRes) throw new Error("redis multi failed");
+    return { count: Number(incrRes[1]), ttl: Math.max(1, Number(ttlRes[1])) };
   }
 
   async getJson<T>(key: string): Promise<T | null> {
@@ -80,6 +84,8 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
-    await this.client.quit().catch(() => this.client.disconnect());
+    await this.client.quit().catch(() => {
+      this.client.disconnect();
+    });
   }
 }

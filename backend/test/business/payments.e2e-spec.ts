@@ -25,7 +25,6 @@ describe("Direct payments: Orange Money / Mobile Money / merchant code (e2e)", (
     fullName: "Propriétaire B",
   };
   const cashierUser = { phone: uniquePhone(), password: "MotDePasse123!", fullName: "Caissier" };
-  const phones = [owner.phone, otherOwner.phone, cashierUser.phone];
 
   let a: { token: string; businessId: string; userId: string };
   let b: { token: string; businessId: string; userId: string };
@@ -337,7 +336,9 @@ describe("Direct payments: Orange Money / Mobile Money / merchant code (e2e)", (
         .set(auth(a.token))
         .attach("file", PNG, { filename: "logo.png", contentType: "image/png" })
         .expect(200)
-        .expect((res) => expect(res.body.hasLogo).toBe(true));
+        .expect((res) => {
+          expect(res.body.hasLogo).toBe(true);
+        });
 
       const logo = await request(server)
         .get(`/api/v1/payment-methods/${orangeId}/logo`)

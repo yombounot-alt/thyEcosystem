@@ -1,10 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
-  CurrentBusiness,
-  CurrentPermissions,
-  CurrentUser,
-} from "../../../kernel/auth/current-user.js";
+import { CurrentBusiness, CurrentUser } from "../../../kernel/auth/current-user.js";
 import { RequirePermission } from "../../../kernel/auth/auth-types.js";
 import type { AuthUser } from "../../../kernel/auth/auth-types.js";
 import { CreateSaleDto } from "./dto/create-sale.dto.js";

@@ -1,12 +1,5 @@
 import request from "supertest";
-import {
-  addMemberSql,
-  createHarness,
-  loginWithOtp,
-  signupAndCreateBusiness,
-  uniquePhone,
-  type Harness,
-} from "../harness.js";
+import { createHarness, signupAndCreateBusiness, uniquePhone, type Harness } from "../harness.js";
 
 describe("Dashboard (e2e)", () => {
   let h: Harness;

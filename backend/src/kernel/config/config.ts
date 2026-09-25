@@ -65,17 +65,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     dbPoolMax: num(env.DB_POOL_MAX, 10),
     redisUrl: env.REDIS_URL ?? "redis://localhost:6379",
     jwt: {
-      // `||` et non `??` : une variable présente mais VIDE (cas de .env.example, à remplir en
-      // production) doit retomber sur le défaut de dev, pas produire une clé de signature vide.
+      // `||` et non `??` (et `eslint-disable` sur les 4 lignes du même type ci-dessous) : une
+      // variable présente mais VIDE (cas de .env.example, à remplir en production) doit retomber
+      // sur le défaut de dev, pas produire une clé de signature vide — `??` ne le ferait pas.
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       secret: env.JWT_SECRET || DEV_SECRET,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       issuer: env.JWT_ISSUER || "thy-ecosystem",
       accessTtlSec: num(env.ACCESS_TTL_SEC, 15 * 60),
       refreshTtlDays: num(env.REFRESH_TTL_DAYS, 30),
     },
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- voir plus haut
     hmacPepper: env.HMAC_PEPPER || DEV_SECRET + "-pepper",
     defaultCountry: (env.DEFAULT_COUNTRY ?? "GN").toUpperCase(),
     defaultCurrency: (env.DEFAULT_CURRENCY ?? "GNF").toUpperCase(),
     sms: { driver: "console", ...(env.DEV_FIXED_OTP ? { fixedOtp: env.DEV_FIXED_OTP } : {}) },
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- voir plus haut
     storage: { driver: "local", localPath: env.STORAGE_LOCAL_PATH || "./uploads" },
     rateLimitEnabled: bool(env.RATE_LIMIT_ENABLED, true),
   };
@@ -98,8 +103,13 @@ export function validateConfig(cfg: AppConfig): void {
     );
   if (cfg.sms.fixedOtp !== undefined)
     errors.push("DEV_FIXED_OTP est interdit en production (code OTP prévisible)");
+  // Ces deux comparaisons sont toujours vraies TANT QUE ces types n'ont qu'une seule valeur
+  // possible (aucun autre adaptateur SMS/stockage implémenté) — gardées pour rester le filet de
+  // sécurité qu'elles redeviendront dès qu'un second adaptateur (ADR-005, ADR-012) existera.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cfg.sms.driver === "console")
     errors.push('SMS_DRIVER ne peut pas être "console" en production');
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cfg.storage.driver === "local")
     errors.push(
       "Le stockage sur disque local est interdit en production (adaptateur S3/GCS requis, ADR-012)",

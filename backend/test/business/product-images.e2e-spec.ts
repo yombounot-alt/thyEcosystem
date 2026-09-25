@@ -1,14 +1,7 @@
 import { existsSync, rmSync } from "fs";
 import * as path from "path";
 import request from "supertest";
-import {
-  addMemberSql,
-  createHarness,
-  loginWithOtp,
-  signupAndCreateBusiness,
-  uniquePhone,
-  type Harness,
-} from "../harness.js";
+import { createHarness, signupAndCreateBusiness, uniquePhone, type Harness } from "../harness.js";
 
 // 1×1 PNG.
 const PNG = Buffer.from(

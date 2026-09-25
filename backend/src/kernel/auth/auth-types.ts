@@ -19,7 +19,9 @@ export interface Membership {
 }
 
 export type AuthedRequest = Request & {
-  user: AuthUser;
+  // Non défini pour les routes @Public() : AuthGuard s'arrête avant de le poser (guards.ts).
+  // Ne jamais retirer le `?` pour « simplifier » — RateLimitGuard tourne aussi sur ces routes.
+  user?: AuthUser;
   membership?: Membership;
   /** Permissions effectives (rôle + surcharges) du membre pour l'entreprise de la requête. */
   permissions?: Set<string>;

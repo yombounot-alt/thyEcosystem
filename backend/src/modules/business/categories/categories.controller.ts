@@ -1,10 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
-  CurrentBusiness,
-  CurrentPermissions,
-  CurrentUser,
-} from "../../../kernel/auth/current-user.js";
+import { CurrentBusiness } from "../../../kernel/auth/current-user.js";
 import { RequirePermission } from "../../../kernel/auth/auth-types.js";
 import { CategoriesService } from "./categories.service.js";
 import { CreateCategoryDto } from "./dto/create-category.dto.js";

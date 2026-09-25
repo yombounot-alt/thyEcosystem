@@ -17,11 +17,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import type { Response } from "express";
-import {
-  CurrentBusiness,
-  CurrentPermissions,
-  CurrentUser,
-} from "../../../kernel/auth/current-user.js";
+import { CurrentBusiness, CurrentUser } from "../../../kernel/auth/current-user.js";
 import { RequirePermission } from "../../../kernel/auth/auth-types.js";
 import type { AuthUser } from "../../../kernel/auth/auth-types.js";
 import { CreateProductDto } from "./dto/create-product.dto.js";

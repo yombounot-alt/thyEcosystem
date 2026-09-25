@@ -40,7 +40,7 @@ export class InventoryService {
     const newStock = Number(product.currentStock) + delta;
     if (newStock < 0 && !params.allowNegativeStock) {
       throw new BadRequestException(
-        `Stock insuffisant pour ${product.name} (disponible : ${product.currentStock}).`,
+        `Stock insuffisant pour ${product.name} (disponible : ${product.currentStock.toString()}).`,
       );
     }
 

@@ -22,6 +22,12 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/consistent-type-imports": "error",
       "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Une classe `@Module()`/`@Injectable()` sans membre n'est pas du code mort : c'est
+      // l'idiome NestJS pour porter des métadonnées de décorateur.
+      "@typescript-eslint/no-extraneous-class": ["error", { allowWithDecorator: true }],
+      // Interpoler un nombre (`${ttlSec}s`, clés de cache, montants…) ne produit jamais
+      // « [object Object] » : seuls les objets/`unknown` sans `toString` fiable restent signalés.
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
     },
   },
   prettierConfig,

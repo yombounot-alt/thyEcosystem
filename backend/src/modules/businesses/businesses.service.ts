@@ -9,7 +9,6 @@ import {
   NON_OVERRIDABLE_PERMISSIONS,
   PermissionsService,
 } from "../../kernel/auth/permissions.service.js";
-import { addDays } from "../../kernel/util.js";
 import type {
   AcceptInvitationDto,
   ChangeMemberRoleDto,
@@ -118,11 +117,14 @@ export class BusinessesService {
           dto.currency ?? this.cfg.defaultCurrency,
           dto.timezone ?? "Africa/Conakry",
           dto.phone ?? null,
+          // `??` ne suffit pas : une adresse blanche ("   ") doit aussi devenir null, pas "".
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           dto.address?.trim() || null,
           userId,
         ],
       );
-      const row = inserted.rows[0]!;
+      const row = inserted.rows[0];
+      if (!row) throw new Error("create: insertion core.businesses sans résultat");
       await tx.query(
         `INSERT INTO core.business_members (business_id, user_id, role_id) VALUES ($1, $2, $3)`,
         [row.id, userId, owner.id],
@@ -213,7 +215,11 @@ export class BusinessesService {
           [businessId, dto.phone, role.id, this.crypto.tokenHash(token), invitedBy],
         ),
       )
-      .then((r) => r.rows[0]!);
+      .then((r) => {
+        const row = r.rows[0];
+        if (!row) throw new Error("invite: insertion core.business_invitations sans résultat");
+        return row;
+      });
     return { ...row, token };
   }
 
@@ -240,7 +246,7 @@ export class BusinessesService {
         [tokenHash],
         tx,
       );
-      if (!inv || inv.status !== "PENDING")
+      if (inv?.status !== "PENDING")
         throw unprocessable("INVITATION_INVALID", "Invitation invalide ou déjà utilisée");
       if (inv.expiresAt < new Date())
         throw unprocessable("INVITATION_EXPIRED", "Invitation expirée");
@@ -249,7 +255,7 @@ export class BusinessesService {
         [userId],
         tx,
       );
-      if (!user || user.phone !== inv.phone)
+      if (user?.phone !== inv.phone)
         throw forbidden(
           "INVITATION_PHONE_MISMATCH",
           "Cette invitation ne correspond pas à votre numéro de téléphone",

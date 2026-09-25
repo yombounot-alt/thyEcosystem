@@ -73,7 +73,9 @@ export class ExpensesService {
       tx.expense.update({
         where: { id },
         data: {
-          ...dto,
+          category: dto.category,
+          amount: dto.amount,
+          description: dto.description,
           expenseDate: dto.expenseDate ? new Date(dto.expenseDate) : undefined,
         },
       }),

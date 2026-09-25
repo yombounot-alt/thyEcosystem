@@ -71,7 +71,7 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
       for (const [role, m] of Object.entries(members)) expect(m.role).toBe(role);
 
       const cashier = await post(
-        members["CASHIER"]!.token,
+        members.CASHIER!.token,
         `/businesses/${owner.businessId}/activate`,
       );
       expect(cashier.body.permissions).toEqual(
@@ -174,15 +174,15 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
         items: [{ productId: product.id, quantity: 1 }],
         payments: [{ method: "cash", amount: 1000 }],
       };
-      await post(members["CASHIER"]!.token, "/sales", sale).expect(201);
-      await post(members["VIEWER"]!.token, "/sales", sale).expect(403);
-      await post(members["STOCK_KEEPER"]!.token, "/sales", sale).expect(403);
+      await post(members.CASHIER!.token, "/sales", sale).expect(201);
+      await post(members.VIEWER!.token, "/sales", sale).expect(403);
+      await post(members.STOCK_KEEPER!.token, "/sales", sale).expect(403);
     });
 
     it("la gestion des membres est réservée à OWNER/ADMIN", async () => {
       const path = `/businesses/${owner.businessId}/members`;
       await get(owner.token, path).expect(200);
-      await get(members["ADMIN"]!.token, path).expect(200);
+      await get(members.ADMIN!.token, path).expect(200);
       for (const role of ["MANAGER", "CASHIER", "STOCK_KEEPER", "ACCOUNTANT", "VIEWER"]) {
         await get(members[role]!.token, path).expect(403);
       }

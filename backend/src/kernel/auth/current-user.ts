@@ -2,7 +2,10 @@ import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
 import type { AuthedRequest, AuthUser, Membership } from "./auth-types.js";
 
 export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionContext): AuthUser => {
-  return ctx.switchToHttp().getRequest<AuthedRequest>().user;
+  const user = ctx.switchToHttp().getRequest<AuthedRequest>().user;
+  if (!user)
+    throw new Error("CurrentUser utilisé sur une route sans @Authenticated/@RequirePermission");
+  return user;
 });
 
 /** Adhésion (entreprise, rôle) vérifiée par le garde d'accès — disponible sur les routes `@RequirePermission`. */
@@ -43,5 +46,5 @@ export const Meta = createParamDecorator((_: unknown, ctx: ExecutionContext): Cl
   const req = ctx.switchToHttp().getRequest<AuthedRequest>();
   const dev = req.headers["x-device-id"];
   const deviceId = typeof dev === "string" && /^[A-Za-z0-9-]{8,64}$/.test(dev) ? dev : undefined;
-  return { ip: req.ip, deviceId, userAgent: String(req.headers["user-agent"] ?? "").slice(0, 200) };
+  return { ip: req.ip, deviceId, userAgent: (req.headers["user-agent"] ?? "").slice(0, 200) };
 });

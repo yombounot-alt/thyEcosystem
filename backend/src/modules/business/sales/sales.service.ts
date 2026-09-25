@@ -265,9 +265,11 @@ export class SalesService {
       }
 
       if (amountDue > 0) {
+        // Garanti par le contrôle plus haut (amountDue > 0 sans customerId ⇒ BadRequestException).
+        if (!dto.customerId) throw new Error("checkout: amountDue > 0 sans customerId");
         await this.credits.createCredit(tx, {
           businessId,
-          customerId: dto.customerId!,
+          customerId: dto.customerId,
           saleId: sale.id,
           amount: amountDue,
           note: `Solde restant sur la vente ${saleNumber}`,

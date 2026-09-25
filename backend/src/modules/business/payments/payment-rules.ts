@@ -92,25 +92,32 @@ export function isValidUssdTemplate(value: string): boolean {
  * filled in. Null when a placeholder has nothing to fill it (never dial a half-built code) or the
  * result is not a plain USSD string.
  */
+function resolvePlaceholder(
+  name: string,
+  values: { phone?: string | null; amount: number; code?: string | null },
+): string {
+  if (name === "numero") return (values.phone ?? "").replace(/\D/g, "");
+  if (name === "montant") return String(Math.round(values.amount));
+  if (name === "code") return (values.code ?? "").replace(/[^A-Za-z0-9]/g, "");
+  return "";
+}
+
 export function resolveUssd(
   template: string | null | undefined,
   values: { phone?: string | null; amount: number; code?: string | null },
 ): string | null {
   if (!template) return null;
 
-  let missing = false;
-  const filled = template.replace(USSD_PLACEHOLDERS, (_match, name: string) => {
-    const value =
-      name === "numero"
-        ? (values.phone ?? "").replace(/\D/g, "")
-        : name === "montant"
-          ? String(Math.round(values.amount))
-          : (values.code ?? "").replace(/[^A-Za-z0-9]/g, "");
-    if (!value) missing = true;
-    return value;
-  });
+  // Un `let` muté depuis le remplaceur de `replace()` n'est pas fiable à relire ensuite (le
+  // vérificateur de types ne suit pas les mutations à travers une fermeture) : on vérifie donc
+  // chaque substitution AVANT de construire le code final, plutôt que pendant.
+  const names = [...template.matchAll(USSD_PLACEHOLDERS)].map((m) => m[1] ?? "");
+  if (names.some((name) => !resolvePlaceholder(name, values))) return null;
 
-  return missing || !/^[0-9*#+]+$/.test(filled) ? null : filled;
+  const filled = template.replace(USSD_PLACEHOLDERS, (_match, name: string) =>
+    resolvePlaceholder(name, values),
+  );
+  return /^[0-9*#+]+$/.test(filled) ? filled : null;
 }
 
 /**

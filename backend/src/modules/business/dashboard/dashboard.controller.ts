@@ -1,10 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import {
-  CurrentBusiness,
-  CurrentPermissions,
-  CurrentUser,
-} from "../../../kernel/auth/current-user.js";
+import { CurrentBusiness, CurrentPermissions } from "../../../kernel/auth/current-user.js";
 import { DashboardService } from "./dashboard.service.js";
 import { DashboardPeriodQuery } from "./dto/dashboard-period.query.js";
 import { SalesChartQuery } from "./dto/sales-chart.query.js";

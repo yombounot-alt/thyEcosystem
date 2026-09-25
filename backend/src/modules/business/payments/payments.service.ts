@@ -9,7 +9,6 @@ import {
 import { ManualPayment, PaymentMethod, Prisma } from "@prisma/client";
 import { BizPrisma, businessInfo } from "../biz-prisma.service.js";
 import { isUniqueViolation } from "../common/db-errors.js";
-import { CreateSaleDto } from "../sales/dto/create-sale.dto.js";
 import { SalesService } from "../sales/sales.service.js";
 import { ListPaymentsQuery } from "./dto/list-payments.query.js";
 import { RejectPaymentDto } from "./dto/reject-payment.dto.js";
@@ -125,7 +124,7 @@ export class PaymentsService {
           include: { method: true },
         }),
       );
-      return this.view(payment);
+      return await this.view(payment);
     } catch (error) {
       // Two identical requests raced: the loser gets the winner's payment.
       if (isUniqueViolation(error, "client_request_id")) {
@@ -164,9 +163,9 @@ export class PaymentsService {
         "Référence de transaction invalide (4 à 64 caractères : lettres, chiffres, . _ - /).",
       );
     }
-    if (Number(dto.amountSent) !== amount) {
+    if (dto.amountSent !== amount) {
       throw new BadRequestException(
-        `Le montant envoyé (${formatMoney(Number(dto.amountSent), payment.currency)}) doit être exactement ` +
+        `Le montant envoyé (${formatMoney(dto.amountSent, payment.currency)}) doit être exactement ` +
           `le montant à payer (${formatMoney(amount, payment.currency)}).`,
       );
     }
@@ -464,7 +463,7 @@ export class PaymentsService {
           // The money is in and the goods are leaving: never refuse the sale because the stock
           // count is off or a product was deactivated meanwhile.
           offline: true,
-        } as CreateSaleDto,
+        },
         payment.createdBy,
         { unitPrices: Object.fromEntries(snapshot.items.map((i) => [i.productId, i.unitPrice])) },
       );
@@ -476,7 +475,8 @@ export class PaymentsService {
         }),
       );
     } catch (error) {
-      this.logger.error(`Paiement ${payment.id} validé mais vente non enregistrée: ${error}`);
+      const reason = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Paiement ${payment.id} validé mais vente non enregistrée: ${reason}`);
       return payment;
     }
   }

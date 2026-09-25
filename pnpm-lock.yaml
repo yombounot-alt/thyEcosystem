@@ -93,6 +93,9 @@ importers:
       '@swc/core':
         specifier: ^1.16.2
         version: 1.16.2
+      '@thy/config-presets':
+        specifier: workspace:*
+        version: link:../shared/config-presets
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -111,6 +114,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.2
         version: 4.1.11(vitest@4.1.11)
+      eslint:
+        specifier: ^9.13.0
+        version: 9.39.5(jiti@2.6.1)
       prisma:
         specifier: ^5.22.0
         version: 5.22.0

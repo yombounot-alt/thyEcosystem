@@ -36,8 +36,9 @@ export async function createHarness(opts: HarnessOptions = {}): Promise<Harness>
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(SMS_SENDER)
     .useValue({
-      async sendOtp(phone: string, code: string) {
+      sendOtp(phone: string, code: string) {
         codes.set(phone, code);
+        return Promise.resolve();
       },
     })
     .compile();

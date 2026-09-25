@@ -66,8 +66,8 @@ export class PermissionsService {
     if (!overrides) return effective;
     for (const [code, allowed] of Object.entries(overrides)) {
       if ((NON_OVERRIDABLE_PERMISSIONS as readonly string[]).includes(code)) continue;
-      if (allowed === true) effective.add(code);
-      else if (allowed === false) effective.delete(code);
+      if (allowed) effective.add(code);
+      else effective.delete(code);
     }
     return effective;
   }
