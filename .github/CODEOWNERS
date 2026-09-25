@@ -1,0 +1,4 @@
+# Propriétaires par défaut — voir https://docs.github.com/articles/about-code-owners
+# Projet en solo à ce stade (Phase 0) : tout revient au propriétaire du dépôt. À affiner par
+# dossier (ex. `/mobile/ @quelquun`) au fur et à mesure que l'équipe grandit.
+* @yombounot-alt

@@ -1,0 +1,44 @@
+# CI de l'app mobile (mobile/app) — voir docs/plans/phase-0-foundation.md L0.3.
+# Se déclenche sur toute PR/push vers main : une PR vide doit aussi passer au vert.
+name: CI Mobile
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-test-build:
+    name: Analyse, format, tests, build web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2.23.0
+        with:
+          # Alignée sur la version installée en développement (D:\src\flutter) — à faire évoluer
+          # ensemble plutôt que de dériver silencieusement d'un `channel: stable` flottant.
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
+
+      # test/live_api_test.dart s'auto-ignore ici : il ne s'exécute que si
+      # --dart-define=THY_API_BASE_URL vise un backend réellement démarré (voir son en-tête). Le
+      # brancher sur un vrai backend + PostgreSQL/Redis dans cette CI est un travail à part, pas
+      # encore fait (docs/plans/consolidation-strategy.md).
+      - run: flutter test
+
+      # Aucun JDK/SDK Android n'est requis pour le web : c'est le seul build vérifié ici pour
+      # l'instant (voir L0.10 pour un build Android/iOS complet).
+      - run: flutter build web --release

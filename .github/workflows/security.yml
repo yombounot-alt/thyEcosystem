@@ -1,0 +1,89 @@
+# Sécurité transverse (secrets, dépendances, analyse statique) — voir
+# docs/plans/phase-0-foundation.md L0.3. Se déclenche sur toute PR/push vers main, plus un
+# balayage hebdomadaire (les vulnérabilités publiées après coup n'attendent pas une PR).
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # lundi 06:00 UTC
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Installer gitleaks
+        run: |
+          curl -sSL -o gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar xzf gitleaks.tar.gz gitleaks
+          sudo install -m 755 gitleaks /usr/local/bin/gitleaks
+          rm gitleaks gitleaks.tar.gz
+      - name: Scanner l'arbre de travail (voir .gitleaks.toml)
+        # Analyse le contenu du dépôt tel qu'il est dans cette PR (--no-git) : un balayage complet
+        # de l'historique est un chantier à part (coûteux sur chaque PR), à faire plus tard en tâche
+        # planifiée si besoin.
+        run: gitleaks detect --no-git --source . --config .gitleaks.toml --redact --verbose
+
+  dependencies:
+    name: Dépendances Node (pnpm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level=high
+
+  codeql:
+    name: Analyse statique (CodeQL)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v4
+
+  filesystem-and-sbom:
+    name: Dépendances & IaC (Trivy) + SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Informatif pour l'instant (exit-code 0) : infra/docker/compose.dev.yml a des mots de passe
+      # volontairement faibles ("changeme", dev uniquement) que Trivy signalerait à tort comme
+      # critiques. À durcir (exit-code 1) une fois les faux positifs connus explicitement ignorés.
+      - name: Trivy — dépendances et configuration
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+      - name: SBOM (CycloneDX)
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: cyclonedx
+          output: sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          retention-days: 90

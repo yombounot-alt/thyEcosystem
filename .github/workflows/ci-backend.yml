@@ -1,0 +1,97 @@
+# CI du backend (backend/) — voir docs/plans/phase-0-foundation.md L0.3.
+# Se déclenche sur toute PR/push vers main (pas seulement celles qui touchent backend/) : une PR
+# vide doit aussi passer au vert, preuve que le squelette CI lui-même fonctionne.
+name: CI Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  quality:
+    name: Lint, typecheck, format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6 # version pnpm lue depuis packageManager (package.json racine)
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+
+  unit:
+    name: Tests unitaires
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  e2e:
+    name: Tests e2e (PostgreSQL + Redis)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Même image que infra/docker/compose.dev.yml : postgis n'est pas encore utilisée par les
+        # migrations, mais un futur module géo (Immo, Delivery) ne doit pas surprendre la CI.
+        image: postgis/postgis:17-3.5-alpine
+        env:
+          POSTGRES_USER: thy_migrator
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: thy
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U thy_migrator -d thy"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://thy_app:changeme@localhost:5432/thy
+      MIGRATOR_DATABASE_URL: postgres://thy_migrator:changeme@localhost:5432/thy
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Le service ne peut pas monter infra/docker/postgres/init (il démarre avant le checkout) :
+      # on rejoue donc ici, à l'identique, ce que docker-entrypoint-initdb.d ferait en local — les
+      # tests RLS vérifient que le rôle thy_app existe exactement comme ces scripts le créent.
+      - name: Rôles applicatifs & extensions (infra/docker/postgres/init)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client
+          PGPASSWORD=changeme psql -h localhost -U thy_migrator -d thy -v ON_ERROR_STOP=1 \
+            -f infra/docker/postgres/init/01-roles.sql
+          PGPASSWORD=changeme psql -h localhost -U thy_migrator -d thy -v ON_ERROR_STOP=1 \
+            -f infra/docker/postgres/init/02-extensions.sql
+
+      - run: pnpm --filter @thy/backend run build
+      - run: pnpm --filter @thy/backend run migrate
+      - run: pnpm --filter @thy/backend run test:e2e

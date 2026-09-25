@@ -1,0 +1,43 @@
+# CI de l'admin (admin/) — voir docs/plans/phase-0-foundation.md L0.3 et L0.11.
+# admin/ ne contient pour l'instant que .gitkeep (aucun code avant L0.11) : chaque étape se
+# désactive donc elle-même tant que admin/package.json n'existe pas, plutôt que d'échouer ou
+# d'être absente — une PR vide doit passer au vert, ce squelette avec.
+name: CI Admin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, tests (admin/)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: "admin/ n'a pas encore de code (L0.11)"
+        if: hashFiles('admin/package.json') == ''
+        run: |
+          echo "Rien à vérifier : admin/ ne contient que .gitkeep pour l'instant."
+
+      - if: hashFiles('admin/package.json') != ''
+        uses: pnpm/action-setup@v6
+      - if: hashFiles('admin/package.json') != ''
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: pnpm
+      - if: hashFiles('admin/package.json') != ''
+        run: pnpm install --frozen-lockfile
+      - if: hashFiles('admin/package.json') != ''
+        run: pnpm --dir admin run lint
+      - if: hashFiles('admin/package.json') != ''
+        run: pnpm --dir admin run typecheck
+      - if: hashFiles('admin/package.json') != ''
+        run: pnpm --dir admin run test
