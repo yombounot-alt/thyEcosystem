@@ -1,0 +1,4 @@
+# Copier en backend.hcl (gitignoré) puis : terraform init -backend-config=backend.hcl
+# Le bucket est créé par infra/terraform/bootstrap (sortie `state_bucket_name`).
+bucket = "thy-staging-tfstate-thy-staging-XXXXXX"
+prefix = "environments/staging"

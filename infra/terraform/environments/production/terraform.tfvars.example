@@ -1,0 +1,8 @@
+# Copier en terraform.tfvars (gitignoré) et renseigner. Ne JAMAIS committer terraform.tfvars.
+project_id          = "thy-production-XXXXXX" # id du projet GCP production, pas son nom d'affichage
+notification_email  = "toi@example.com"
+
+# Absente au tout premier apply (voir README §"Premier déploiement") : une chaîne quelconque suffit
+# pour créer le service Cloud Run une première fois, l'image réelle vient ensuite par un
+# `gcloud run services update --image=...` (ou un nouvel apply une fois l'image poussée).
+api_image = "europe-west1-docker.pkg.dev/thy-production-XXXXXX/thy-production-images/api:bootstrap"

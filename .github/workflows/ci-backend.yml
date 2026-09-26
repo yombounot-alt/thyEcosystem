@@ -95,3 +95,20 @@ jobs:
       - run: pnpm --filter @thy/backend run build
       - run: pnpm --filter @thy/backend run migrate
       - run: pnpm --filter @thy/backend run test:e2e
+
+  image:
+    name: Image Docker (build + vérification)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Contexte = racine du dépôt (espace de travail pnpm) — même commande que le README d'infra.
+      - run: docker build -f backend/Dockerfile -t thy-backend:ci .
+      # Le client Prisma généré et son moteur doivent être PRÉSENTS dans l'image finale : sans ça,
+      # l'API démarre puis échoue à la première requête. `new PrismaClient()` ne se connecte pas.
+      - name: Le client Prisma est utilisable dans l'image
+        run: |
+          docker run --rm thy-backend:ci node -e \
+            "const { PrismaClient } = require('@prisma/client'); new PrismaClient(); console.log('prisma client ok')"
+      - name: L'image tourne en non-root
+        run: |
+          test "$(docker run --rm thy-backend:ci id -u)" != "0"

@@ -1,0 +1,57 @@
+# CI de l'infrastructure (infra/terraform) — voir infra/terraform/README.md et
+# docs/plans/phase-0-foundation.md L0.4. Ne touche JAMAIS à GCP : `fmt` et `validate` sont locaux
+# (`init -backend=false` ne se connecte à aucun state), donc aucun identifiant cloud n'est requis
+# ici. Un `terraform plan` réel en PR viendra avec la fédération d'identité (bootstrap/).
+name: CI Infra
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-infra-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.16.4"
+
+      - name: fmt (récursif)
+        run: terraform -chdir=infra/terraform fmt -check -recursive -diff
+
+      # Un même plugin `google` (~100 Mo) sert aux trois racines : cache partagé.
+      - name: Cache des plugins Terraform
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/tf-plugin-cache
+          key: terraform-plugins-${{ hashFiles('infra/terraform/**/.terraform.lock.hcl', 'infra/terraform/**/*.tf') }}
+          restore-keys: terraform-plugins-
+
+      - name: validate — bootstrap, staging, production
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tf-plugin-cache
+        run: |
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          for dir in bootstrap environments/staging environments/production; do
+            echo "::group::$dir"
+            terraform -chdir="infra/terraform/$dir" init -backend=false -input=false
+            terraform -chdir="infra/terraform/$dir" validate
+            echo "::endgroup::"
+          done
+
+      # edge-cdn-armor n'est instancié par aucun environnement (il attend un nom de domaine) : il
+      # échapperait donc à la validation ci-dessus. On le valide comme racine autonome.
+      - name: validate — module edge-cdn-armor (non instancié)
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tf-plugin-cache
+        run: |
+          terraform -chdir=infra/terraform/modules/edge-cdn-armor init -backend=false -input=false
+          terraform -chdir=infra/terraform/modules/edge-cdn-armor validate

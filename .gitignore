@@ -45,6 +45,9 @@ Thumbs.db
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+backend.hcl
+# Contient des mots de passe (voir infra/terraform/templates/bootstrap-roles.sql.tpl)
+bootstrap-roles.rendered.sql
 
 # Turborepo
 .turbo/

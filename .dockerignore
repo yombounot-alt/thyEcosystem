@@ -1,0 +1,22 @@
+# Contexte de build Docker (backend/Dockerfile, contexte = racine du dépôt pour l'espace de
+# travail pnpm) — tout le reste n'a rien à faire dans l'image.
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.turbo
+.git
+.github
+docs
+mobile
+admin
+infra
+shared/api-contracts
+shared/design-tokens
+shared/permissions
+*.md
+.env
+.env.*
+!.env.example
+uploads
+uploads-test

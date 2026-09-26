@@ -27,7 +27,7 @@
 | Comptes fournisseurs (sandbox)               | 2 fournisseurs SMS, Firebase (3 projets : dev/staging/prod), Sentry, un PSP (accès sandbox)                                                                                                       |
 | `gh` CLI                                     | déjà présent (`git` détecté) ; créer le dépôt distant (GitHub) si ce n'est pas déjà fait — **le dossier n'est pas encore un dépôt git**                                                           |
 
-**Décision restante avant L0.4** : la **région GCP** (latence réelle depuis les réseaux mobiles ouest-africains à mesurer ; candidates `europe-west1`/`europe-west4`, aucune région GCP en Afrique de l'Ouest à ce jour) — ne bloque pas le démarrage, un choix par défaut (`europe-west1`) sera pris et documenté en ADR si aucune mesure n'est disponible à temps.
+**Décision prise (2026-09-26) : région `europe-west1` par défaut** — le repli prévu ci-dessous, aucune mesure de latence n'étant disponible (voir ADR-012). Texte d'origine : la **région GCP** (latence réelle depuis les réseaux mobiles ouest-africains à mesurer ; candidates `europe-west1`/`europe-west4`, aucune région GCP en Afrique de l'Ouest à ce jour) — ne bloque pas le démarrage, un choix par défaut (`europe-west1`) sera pris et documenté en ADR si aucune mesure n'est disponible à temps.
 
 ---
 
@@ -83,7 +83,13 @@ Implémenté avec le style « SQL brut + `pg` » de thyServices (décision D-ORM
 - `dependency-cruiser` : règles R1–R7 configurées et **vertes sur un kernel vide de modules**.
 - **Dépend de** : L0.2, L0.3. **Sortie** : `api`, `worker`, `migrate` démarrent, se connectent à PG/Redis/MinIO, `/health` répond, outbox testée par un événement de démonstration bout en bout.
 
-### L0.4 — Infra staging (IaC) **[//]** peut démarrer en parallèle de L0.5 par une autre personne
+### L0.4 — Infra staging (IaC) 🟡 _(code écrit et validé, 2026-09-26 — **jamais appliqué** : bloqué sur la création du projet GCP, voir ci-dessous)_
+
+**Livré** : `infra/terraform/` (`bootstrap/`, 10 modules, `environments/staging`, squelette `environments/production`, [README](../../infra/terraform/README.md) avec l'ordre exact du premier déploiement), `backend/Dockerfile` (construit et **exécuté** en local : l'API démarre en non-root, `/health/live` et `/health/ready` répondent, Prisma et l'entrypoint `migrate` fonctionnent), `ci-infra.yml` (`fmt` + `validate`). `terraform fmt -check` et `terraform validate` sont verts partout ; un `apply` réel reste à faire et peut révéler des erreurs d'API qu'aucune validation locale ne voit.
+
+**Écarts assumés par rapport au texte ci-dessous** : pas de `worker` (ce process n'existe pas dans le code) ; **Cloud CDN + Cloud Armor écrits mais non instanciés** (le certificat managé exige un nom de domaine, décision non prise) ; PostGIS n'est pas activé par Terraform mais par le migrateur applicatif, comme en local et en CI ; staging tourne en `NODE_ENV=development` tant que les adaptateurs SMS/stockage de production n'existent pas (L0.8) — `production/` est réglé sur `production` et refusera de démarrer, volontairement ; région `europe-west1` par défaut (ADR-012). **Reste, hors de portée d'ici** : créer le projet GCP + facturation, appliquer `bootstrap/` puis `staging/`, puis `cd-staging.yml` (déploiement automatique, à écrire et tester contre un vrai projet).
+
+_(Description originale du lot, conservée pour mémoire :)_
 
 - `infra/terraform/` (provider `google`) : réseau (VPC + connecteur serverless), **Cloud Run** (`api`, `worker`), **Cloud SQL for PostgreSQL** (extension PostGIS activée), **Memorystore for Redis** (`noeviction`), **Cloud Storage** (bucket privé, accès via API compatible S3), **Secret Manager**, **Artifact Registry**, **Cloud CDN + Cloud Armor** (WAF), **Cloud Logging/Monitoring** de base.
 - Environnement **staging** uniquement pour l'instant (prod = squelette, pas de trafic).
