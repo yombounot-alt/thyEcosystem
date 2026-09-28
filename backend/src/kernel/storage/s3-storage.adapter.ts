@@ -17,7 +17,7 @@ function assertSafeKey(key: string): void {
 }
 
 /**
- * Stockage objet compatible S3 (ADR-012) : MinIO en développement, Cloud Storage en staging et en
+ * Stockage objet compatible S3 (ADR-012) : RustFS en développement, Cloud Storage en staging et en
  * production via son API d'interopérabilité S3 (clé HMAC d'un compte de service dédié, voir
  * infra/terraform/modules/storage). Le bucket est privé : les fichiers ne sont jamais servis
  * directement, toujours à travers l'API (qui vérifie l'entreprise et les droits).

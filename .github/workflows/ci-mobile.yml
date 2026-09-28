@@ -29,12 +29,14 @@ jobs:
           channel: stable
           cache: true
 
+      - run: flutter pub get
+
       # Tokens de design (shared/design-tokens) : le Dart généré doit être à jour avec tokens.json,
-      # et chaque paire texte/fond doit tenir le contraste WCAG dans les deux modes.
+      # et chaque paire texte/fond doit tenir le contraste WCAG dans les deux modes. APRÈS
+      # `pub get` : le générateur appelle `dart format`, qui lit analysis_options.yaml (lui-même
+      # dépendant du paquet flutter_lints).
       - name: Tokens de design à jour + contraste WCAG
         run: node ../../shared/design-tokens/build.mjs --check --report
-
-      - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
 

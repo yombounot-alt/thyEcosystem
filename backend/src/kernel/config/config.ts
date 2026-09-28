@@ -29,7 +29,7 @@ export interface AppConfig {
    */
   sms: { driver: "console"; fixedOtp?: string };
   /**
-   * Stockage de fichiers (voir StoragePort) : disque local en développement, S3-compatible (MinIO,
+   * Stockage de fichiers (voir StoragePort) : disque local en développement, S3-compatible (RustFS,
    * ou Cloud Storage via son interop S3 — ADR-012) ailleurs. Le disque local est refusé en production.
    */
   storage: { driver: "local" | "s3"; localPath: string; s3?: S3Config };
@@ -58,13 +58,13 @@ export interface AppConfig {
 }
 
 export interface S3Config {
-  /** Ex. `http://localhost:9002` (MinIO) ou `https://storage.googleapis.com` (GCS). */
+  /** Ex. `http://localhost:9002` (RustFS en local) ou `https://storage.googleapis.com` (GCS). */
   endpoint: string;
   region: string;
   bucket: string;
   accessKeyId: string;
   secretAccessKey: string;
-  /** Adressage `endpoint/bucket/clé` (MinIO, GCS) plutôt que `bucket.endpoint/clé`. */
+  /** Adressage `endpoint/bucket/clé` (RustFS, GCS) plutôt que `bucket.endpoint/clé`. */
   forcePathStyle: boolean;
 }
 

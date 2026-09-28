@@ -7,7 +7,7 @@ import type { StoragePort } from "../../src/kernel/storage/storage.port.js";
 /**
  * Contrat du port de stockage, exécuté à l'identique sur chaque adaptateur : ce que les modules
  * métier attendent (photos, logos, preuves) doit se comporter pareil en local et sur S3/GCS.
- * S3 vise le MinIO de la pile de dev (bucket `thy-test`, créé par le service `minio-init`) ;
+ * S3 vise le stockage de la pile de dev (RustFS, bucket `thy-test` créé par le service `s3-init`) ;
  * surcharger S3_TEST_* pour viser un autre point d'accès.
  */
 function s3Config(): AppConfig {
@@ -16,7 +16,7 @@ function s3Config(): AppConfig {
     STORAGE_DRIVER: "s3",
     S3_ENDPOINT: process.env.S3_TEST_ENDPOINT ?? "http://localhost:9002",
     S3_BUCKET: process.env.S3_TEST_BUCKET ?? "thy-test",
-    S3_ACCESS_KEY_ID: process.env.S3_TEST_ACCESS_KEY_ID ?? "thy_minio",
+    S3_ACCESS_KEY_ID: process.env.S3_TEST_ACCESS_KEY_ID ?? "thy_s3",
     S3_SECRET_ACCESS_KEY: process.env.S3_TEST_SECRET_ACCESS_KEY ?? "changeme123",
   });
 }
@@ -29,7 +29,7 @@ const adapters: [string, () => StoragePort][] = [
         loadConfig({ NODE_ENV: "test", STORAGE_LOCAL_PATH: "./uploads-test" }),
       ),
   ],
-  ["S3 (MinIO)", () => new S3StorageAdapter(s3Config())],
+  ["S3", () => new S3StorageAdapter(s3Config())],
 ];
 
 describe.each(adapters)("StoragePort — %s", (_name, make) => {

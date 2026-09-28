@@ -42,36 +42,42 @@ services:
       timeout: 5s
       retries: 10
 
-  minio:
-    image: minio/minio:latest
+  # Stockage objet compatible S3 (même API que Cloud Storage en interop S3, ADR-012).
+  # RustFS plutôt que MinIO : les images minio/minio et minio/mc ont été retirées de Docker Hub
+  # (constaté le 2026-09-28, la CI ne pouvait plus les télécharger). Même image en CI.
+  s3:
+    image: rustfs/rustfs:1.0.0
     restart: unless-stopped
-    command: ["server", "/data", "--console-address", ":9001"]
     environment:
-      MINIO_ROOT_USER: thy_minio
-      MINIO_ROOT_PASSWORD: changeme123
+      RUSTFS_ACCESS_KEY: thy_s3
+      RUSTFS_SECRET_KEY: changeme123
     ports:
-      - "9002:9000" # API S3-compatible
+      - "9002:9000" # API S3
       - "9003:9001" # Console web
     volumes:
-      - minio_data:/data
+      - s3_data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  # Crée les buckets du stockage S3 (dev + tests e2e) une fois MinIO prêt, puis s'arrête.
-  minio-init:
-    image: minio/minio:latest # contient mc (image minio/mc retirée de Docker Hub)
+  # Crée les buckets (dev + tests e2e) une fois le stockage prêt, puis s'arrête.
+  s3-init:
+    image: amazon/aws-cli:2.37.5
     depends_on:
-      minio:
+      s3:
         condition: service_healthy
     restart: "no"
+    environment:
+      AWS_ACCESS_KEY_ID: thy_s3
+      AWS_SECRET_ACCESS_KEY: changeme123
+      AWS_DEFAULT_REGION: us-east-1
     entrypoint: >
       /bin/sh -c "
-      mc alias set local http://minio:9000 thy_minio changeme123 &&
-      mc mb --ignore-existing local/thy-dev &&
-      mc mb --ignore-existing local/thy-test"
+      for b in thy-dev thy-test; do
+        aws --endpoint-url http://s3:9000 s3api head-bucket --bucket $$b 2>/dev/null ||
+        aws --endpoint-url http://s3:9000 s3 mb s3://$$b; done"
 
   mailpit:
     image: axllent/mailpit:latest
@@ -92,4 +98,4 @@ services:
 volumes:
   pg_data:
   redis_data:
-  minio_data:
+  s3_data:

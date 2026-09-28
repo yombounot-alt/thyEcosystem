@@ -79,7 +79,7 @@ describe("loadConfig — stockage (STORAGE_DRIVER)", () => {
 
   it("production : le disque local est refusé, s3 en http aussi", () => {
     expect(() => loadConfig({ ...PROD_BASE })).toThrow(/disque local est interdit/);
-    expect(() => loadConfig({ ...PROD_BASE, ...S3, S3_ENDPOINT: "http://minio:9000" })).toThrow(
+    expect(() => loadConfig({ ...PROD_BASE, ...S3, S3_ENDPOINT: "http://s3:9000" })).toThrow(
       /S3_ENDPOINT doit être en https/,
     );
   });

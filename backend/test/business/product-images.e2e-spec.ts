@@ -25,7 +25,7 @@ describe("Product images (e2e)", () => {
   const userB = { phone: uniquePhone(), password: "MotDePasse123!", fullName: "Photographe B" };
   const storageRoot = path.resolve(process.env.STORAGE_LOCAL_PATH ?? "./uploads-test");
   // Vérifié à travers le port de stockage de l'application : vrai quel que soit le pilote
-  // (disque local ou S3/MinIO, voir STORAGE_DRIVER).
+  // (disque local ou S3, voir STORAGE_DRIVER).
   const isStored = async (key: string) =>
     (await h.app.get<StoragePort>(STORAGE_PROVIDER).get(key)) !== null;
 

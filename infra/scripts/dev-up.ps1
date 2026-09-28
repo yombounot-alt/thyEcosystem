@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Démarre l'environnement de développement local THY (PostgreSQL+PostGIS, Redis, MinIO, Mailpit,
+    Démarre l'environnement de développement local THY (PostgreSQL+PostGIS, Redis, stockage S3 RustFS, Mailpit,
     collecteur OTel) et attend que chaque service soit prêt.
 #>
 $ErrorActionPreference = "Stop"
@@ -11,7 +11,7 @@ Write-Host "Demarrage des services THY (docker compose)..." -ForegroundColor Cya
 docker compose -f $composeFile up -d
 
 Write-Host "Attente que les services soient prets..." -ForegroundColor Cyan
-$services = @("postgres", "redis", "minio")
+$services = @("postgres", "redis", "s3")
 foreach ($svc in $services) {
     $cid = docker compose -f $composeFile ps -q $svc
     if (-not $cid) { throw "Service '$svc' introuvable." }
@@ -27,8 +27,8 @@ foreach ($svc in $services) {
 
 Write-Host ""
 Write-Host "Environnement pret :" -ForegroundColor Green
-Write-Host "  PostgreSQL   -> localhost:5432 (db=thy, user=thy_migrator)"
-Write-Host "  Redis        -> localhost:6379"
-Write-Host "  MinIO API    -> http://localhost:9000  (console: http://localhost:9001)"
-Write-Host "  Mailpit UI   -> http://localhost:8025"
+Write-Host "  PostgreSQL   -> localhost:5435 (db=thy, user=thy_migrator)"
+Write-Host "  Redis        -> localhost:6381"
+Write-Host "  S3 (RustFS)  -> http://localhost:9002  (console: http://localhost:9003)"
+Write-Host "  Mailpit UI   -> http://localhost:8026"
 Write-Host "  OTel OTLP    -> http://localhost:4318"
