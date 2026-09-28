@@ -153,8 +153,11 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                         ListTile(
                           onTap: () => context.push('/expenses/${expense.id}/edit'),
                           leading: CircleAvatar(
-                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                            child: Icon(expenseIcon(expense.category), color: AppColors.primary),
+                            backgroundColor: context.colors.primary.withValues(alpha: 0.1),
+                            child: Icon(
+                              expenseIcon(expense.category),
+                              color: context.colors.primary,
+                            ),
                           ),
                           title: Text(ExpenseCategory.label(expense.category)),
                           subtitle: Text(

@@ -125,7 +125,7 @@ class _PaymentDetailScreenState extends ConsumerState<PaymentDetailScreen> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                style: TextButton.styleFrom(foregroundColor: context.colors.danger),
                 child: const Text('Annuler le paiement'),
               ),
             ],
@@ -211,7 +211,7 @@ class _StatusBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final owner = ref.watch(canVerifyPaymentsProvider);
-    final color = statusColor(payment.status);
+    final color = statusColor(payment.status, context.colors);
 
     late final IconData icon;
     late final String title;
@@ -465,17 +465,17 @@ class _Actions extends ConsumerWidget {
           gap,
           OutlinedButton(
             onPressed: busy ? null : onReject,
-            style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+            style: OutlinedButton.styleFrom(foregroundColor: context.colors.danger),
             child: const Text('Refuser'),
           ),
           gap,
           TextButton(onPressed: busy ? null : onCancel, child: const Text('Annuler ce paiement')),
         ],
         if (payment.isSubmitted && !owner)
-          const Text(
+          Text(
             'En attente de la vérification du propriétaire.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: context.colors.onSurfaceMuted),
           ),
         if (payment.isRejected) ...[
           PrimaryButton(
@@ -569,7 +569,7 @@ class _RejectDialogState extends State<_RejectDialog> {
         TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Annuler')),
         TextButton(
           onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.colors.danger),
           child: const Text('Refuser le paiement'),
         ),
       ],

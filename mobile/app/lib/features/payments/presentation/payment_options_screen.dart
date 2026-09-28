@@ -60,12 +60,12 @@ class PaymentOptionsScreen extends ConsumerWidget {
                     child: ListView(
                       padding: const EdgeInsets.only(bottom: 96),
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
                           child: Text(
                             'Vos clients voient les moyens activés quand ils paient. Vous pouvez '
                             'ajouter plusieurs numéros pour un même opérateur.',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: context.colors.onSurfaceMuted),
                           ),
                         ),
                         for (final option in options)
@@ -109,7 +109,7 @@ class _NothingYet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.account_balance_wallet_outlined, size: 56, color: AppColors.primary),
+            Icon(Icons.account_balance_wallet_outlined, size: 56, color: context.colors.primary),
             const SizedBox(height: 16),
             Text(
               'Aucun moyen de paiement',

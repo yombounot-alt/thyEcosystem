@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/notifications_bell.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/formatters.dart';
 import '../../../core/widgets/async_view.dart';
@@ -45,7 +46,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(business.name)),
+      appBar: AppBar(title: Text(business.name), actions: const [NotificationsBell()]),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
@@ -133,7 +134,7 @@ class _SummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final profit = summary.profit;
     final cogs = summary.cogs;
-    final profitColor = (profit ?? 0) < 0 ? AppColors.danger : AppColors.success;
+    final profitColor = (profit ?? 0) < 0 ? context.colors.danger : context.colors.success;
     // Profit is only shown to those allowed to see it (server-side permission).
     final kpis = <Widget>[
       _KpiCard(
@@ -221,7 +222,7 @@ class _KpiCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: color ?? AppColors.primary),
+            Icon(icon, size: 20, color: color ?? context.colors.primary),
             const SizedBox(height: 8),
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 2),
@@ -301,7 +302,7 @@ class _Alerts extends StatelessWidget {
       if (summary.lowStockCount > 0)
         _AlertRow(
           icon: Icons.inventory_2_outlined,
-          color: AppColors.danger,
+          color: context.colors.danger,
           text:
               '${summary.lowStockCount} produit${summary.lowStockCount > 1 ? 's' : ''} en stock faible',
           onTap: () => context.go('/stock'),
@@ -309,7 +310,7 @@ class _Alerts extends StatelessWidget {
       if (summary.overdueCreditsCount > 0)
         _AlertRow(
           icon: Icons.schedule,
-          color: AppColors.warning,
+          color: context.colors.warning,
           text:
               '${summary.overdueCreditsCount} crédit${summary.overdueCreditsCount > 1 ? 's' : ''} client en retard',
           onTap: () => context.push('/credits'),
@@ -317,7 +318,7 @@ class _Alerts extends StatelessWidget {
       if (summary.outstandingCredits > 0)
         _AlertRow(
           icon: Icons.account_balance_wallet_outlined,
-          color: AppColors.primary,
+          color: context.colors.primary,
           text:
               'Créances en cours : ${formatMoney(summary.outstandingCredits, currency: currency)}',
           onTap: () => context.push('/credits'),
@@ -325,9 +326,9 @@ class _Alerts extends StatelessWidget {
     ];
 
     if (rows.isEmpty) {
-      return const Row(
+      return Row(
         children: [
-          Icon(Icons.check_circle, color: AppColors.success),
+          Icon(Icons.check_circle, color: context.colors.success),
           SizedBox(width: 8),
           Text('Aucune alerte pour le moment.'),
         ],
@@ -384,10 +385,10 @@ class _TopProductRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: context.colors.primary.withValues(alpha: 0.1),
             child: Text(
               '$rank',
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+              style: TextStyle(color: context.colors.primary, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(width: 12),

@@ -98,13 +98,13 @@ class _ProductDetailBody extends ConsumerWidget {
     final Color stockColor;
     final String stockStatus;
     if (product.isOutOfStock) {
-      stockColor = AppColors.danger;
+      stockColor = context.colors.danger;
       stockStatus = 'Rupture de stock';
     } else if (product.isLowStock) {
-      stockColor = AppColors.warning;
+      stockColor = context.colors.warning;
       stockStatus = 'Stock faible (minimum ${formatQuantity(product.lowStockThreshold!)})';
     } else {
-      stockColor = AppColors.success;
+      stockColor = context.colors.success;
       stockStatus = 'En stock';
     }
 

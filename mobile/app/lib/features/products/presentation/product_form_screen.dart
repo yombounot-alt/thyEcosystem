@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/api_error_snackbar.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/api/json_helpers.dart';
 import '../../../core/media/photo_picker.dart';
@@ -252,7 +253,7 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
       context.pop();
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      showApiError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

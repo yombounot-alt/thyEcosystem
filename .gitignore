@@ -58,3 +58,8 @@ bootstrap-roles.rendered.sql
 # Fichiers téléversés en développement/tests
 uploads/
 uploads-test/
+
+# Sorties du générateur de tokens de design (shared/design-tokens/build.mjs) : VERSIONNÉES, car la CI
+# vérifie qu'elles sont à jour (`build.mjs --check`) et l'app en a besoin pour compiler.
+!mobile/app/lib/core/theme/thy_tokens.g.dart
+!shared/design-tokens/build/

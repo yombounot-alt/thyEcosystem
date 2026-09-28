@@ -247,13 +247,16 @@ class _HeaderCard extends StatelessWidget {
             customer.hasDebt
                 ? Text(
                   formatMoney(customer.currentBalance, currency: currency),
-                  style: textTheme.headlineMedium?.copyWith(color: AppColors.danger),
+                  style: textTheme.headlineMedium?.copyWith(color: context.colors.danger),
                 )
                 : Row(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
+                    Icon(Icons.check_circle, color: context.colors.success),
                     const SizedBox(width: 8),
-                    Text('À jour', style: textTheme.titleLarge?.copyWith(color: AppColors.success)),
+                    Text(
+                      'À jour',
+                      style: textTheme.titleLarge?.copyWith(color: context.colors.success),
+                    ),
                   ],
                 ),
           ],
@@ -287,10 +290,10 @@ class _CreditTile extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing:
           overdue
-              ? const Chip(
+              ? Chip(
                 label: Text('En retard'),
-                backgroundColor: Color(0x1AD64545),
-                labelStyle: TextStyle(color: AppColors.danger),
+                backgroundColor: context.colors.dangerContainer,
+                labelStyle: TextStyle(color: context.colors.danger),
                 side: BorderSide.none,
               )
               : null,
@@ -307,7 +310,7 @@ class _StatementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPayment = entry.isPayment;
-    final color = isPayment ? AppColors.success : AppColors.danger;
+    final color = isPayment ? context.colors.success : context.colors.danger;
     final title =
         isPayment
             ? 'Paiement reçu${entry.method == null ? '' : ' (${PaymentMethod.label(entry.method!)})'}'

@@ -121,10 +121,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   direction: DismissDirection.endToStart,
                   onDismissed: (_) => notifier.remove(line.product.id),
                   background: Container(
-                    color: AppColors.danger,
+                    color: context.colors.danger,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 24),
-                    child: const Icon(Icons.delete_outline, color: Colors.white),
+                    child: Icon(Icons.delete_outline, color: context.colors.background),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

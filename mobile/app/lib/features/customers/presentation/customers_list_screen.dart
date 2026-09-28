@@ -129,10 +129,10 @@ class _CustomerTile extends StatelessWidget {
     return ListTile(
       onTap: () => context.push('/customers/${customer.id}'),
       leading: CircleAvatar(
-        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+        backgroundColor: context.colors.primary.withValues(alpha: 0.1),
         child: Text(
           customer.fullName.characters.first.toUpperCase(),
-          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+          style: TextStyle(color: context.colors.primary, fontWeight: FontWeight.w700),
         ),
       ),
       title: Text(customer.fullName),
@@ -145,7 +145,7 @@ class _CustomerTile extends StatelessWidget {
                 children: [
                   Text(
                     formatMoney(customer.currentBalance, currency: currency),
-                    style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: context.colors.danger, fontWeight: FontWeight.w700),
                   ),
                   Text('doit', style: Theme.of(context).textTheme.bodySmall),
                 ],

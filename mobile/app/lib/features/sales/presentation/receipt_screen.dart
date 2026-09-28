@@ -226,7 +226,7 @@ class ReceiptCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.storefront, size: 40, color: AppColors.primary),
+            Icon(Icons.storefront, size: 40, color: context.colors.primary),
             const SizedBox(height: 8),
             Text(business.name, textAlign: TextAlign.center, style: textTheme.titleLarge),
             if (address != null && address.isNotEmpty)
@@ -241,11 +241,11 @@ class ReceiptCard extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 padding: const EdgeInsets.all(8),
-                color: AppColors.danger.withValues(alpha: 0.1),
-                child: const Text(
+                color: context.colors.danger.withValues(alpha: 0.1),
+                child: Text(
                   'VENTE ANNULÉE',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w800),
+                  style: TextStyle(color: context.colors.danger, fontWeight: FontWeight.w800),
                 ),
               ),
             const Divider(height: 32),
@@ -287,13 +287,13 @@ class ReceiptCard extends StatelessWidget {
               _Line(
                 'Monnaie rendue',
                 formatMoney(change, currency: currency),
-                color: AppColors.success,
+                color: context.colors.success,
               ),
             if (sale.isOnCredit && !sale.isVoid)
               _Line(
                 'Reste à payer',
                 formatMoney(sale.amountDue, currency: currency),
-                color: AppColors.danger,
+                color: context.colors.danger,
                 bold: true,
               ),
             const SizedBox(height: 16),

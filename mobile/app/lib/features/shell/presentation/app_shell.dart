@@ -80,22 +80,22 @@ class _ToVerifyBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFE6EEFB),
+      color: context.colors.primaryContainer,
       child: InkWell(
         onTap: () => context.push('/payments?status=submitted'),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              const Icon(Icons.hourglass_top, size: 20, color: Color(0xFF2F6FDE)),
+              Icon(Icons.hourglass_top, size: 20, color: context.colors.primary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   count > 1 ? '$count paiements à vérifier' : '1 paiement à vérifier',
-                  style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: context.colors.onSurface),
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+              Icon(Icons.chevron_right, color: context.colors.onSurfaceMuted),
             ],
           ),
         ),

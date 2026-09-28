@@ -259,7 +259,7 @@ class _PosProductTile extends ConsumerWidget {
               )
               : Icon(
                 soldOut ? Icons.block : Icons.add_circle_outline,
-                color: soldOut ? AppColors.danger : AppColors.primary,
+                color: soldOut ? context.colors.danger : context.colors.primary,
               ),
     );
   }

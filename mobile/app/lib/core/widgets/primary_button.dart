@@ -18,10 +18,13 @@ class PrimaryButton extends StatelessWidget {
       onPressed: loading ? null : onPressed,
       child:
           loading
-              ? const SizedBox(
+              ? SizedBox(
                 height: 22,
                 width: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               )
               : Text(label),
     );

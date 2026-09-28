@@ -5,6 +5,8 @@ import 'package:thy_app/app.dart';
 import 'package:thy_app/core/providers.dart';
 import 'package:thy_app/features/auth/application/auth_controller.dart';
 import 'package:thy_app/features/dashboard/application/dashboard_providers.dart';
+import 'package:thy_app/features/notifications/application/notifications_providers.dart';
+import 'package:thy_app/features/team/application/team_providers.dart';
 
 import 'fakes.dart';
 
@@ -30,6 +32,9 @@ void main() {
           tokenStorageProvider.overrideWithValue(FakeTokenStorage()),
           authApiProvider.overrideWithValue(api),
           dashboardApiProvider.overrideWithValue(FakeDashboardApi()),
+          teamApiProvider.overrideWithValue(FakeTeamApi()),
+          notificationsApiProvider.overrideWithValue(FakeNotificationsApi()),
+          notificationsRefreshProvider.overrideWithValue(null),
         ],
         child: const ThyBusinessApp(),
       ),
@@ -100,6 +105,9 @@ void main() {
           tokenStorageProvider.overrideWithValue(FakeTokenStorage(access: 'a', refresh: 'r')),
           authApiProvider.overrideWithValue(auth),
           dashboardApiProvider.overrideWithValue(FakeDashboardApi()),
+          teamApiProvider.overrideWithValue(FakeTeamApi()),
+          notificationsApiProvider.overrideWithValue(FakeNotificationsApi()),
+          notificationsRefreshProvider.overrideWithValue(null),
         ],
         child: const ThyBusinessApp(),
       ),

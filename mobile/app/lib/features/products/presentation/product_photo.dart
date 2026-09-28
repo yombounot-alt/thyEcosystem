@@ -27,13 +27,13 @@ class ProductAvatar extends ConsumerWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+      backgroundColor: context.colors.primary.withValues(alpha: 0.1),
       backgroundImage: bytes == null ? null : MemoryImage(bytes),
       child:
           bytes == null
               ? Text(
                 product.name.isEmpty ? '?' : product.name.characters.first.toUpperCase(),
-                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+                style: TextStyle(color: context.colors.primary, fontWeight: FontWeight.w700),
               )
               : null,
     );
@@ -62,7 +62,7 @@ class PhotoFrame extends StatelessWidget {
         child:
             data == null
                 ? ColoredBox(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: context.colors.primary.withValues(alpha: 0.08),
                   child: Center(child: placeholder),
                 )
                 : Image.memory(
@@ -71,7 +71,7 @@ class PhotoFrame extends StatelessWidget {
                   gaplessPlayback: true,
                   errorBuilder:
                       (_, _, _) => const ColoredBox(
-                        color: Color(0x11000000),
+                        color: ThyScrims.photoPlaceholder,
                         child: Center(child: Icon(Icons.broken_image_outlined)),
                       ),
                 ),

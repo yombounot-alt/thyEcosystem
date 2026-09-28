@@ -90,7 +90,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.filter_list,
-                    color: _categoryId == null ? null : AppColors.primary,
+                    color: _categoryId == null ? null : context.colors.primary,
                   ),
                   tooltip: 'Filtrer par catégorie',
                   onSelected: (id) => setState(() => _categoryId = id.isEmpty ? null : id),
@@ -170,11 +170,11 @@ class _ProductTile extends ConsumerWidget {
     final currency = ref.watch(currencyProvider);
     final Color stockColor;
     if (product.isOutOfStock) {
-      stockColor = AppColors.danger;
+      stockColor = context.colors.danger;
     } else if (product.isLowStock) {
-      stockColor = AppColors.warning;
+      stockColor = context.colors.warning;
     } else {
-      stockColor = AppColors.textPrimary;
+      stockColor = context.colors.onSurface;
     }
 
     final subtitle = [

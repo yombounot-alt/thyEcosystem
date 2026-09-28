@@ -1,0 +1,17 @@
+{
+  "name": "@thy/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Tokens de design THY : tokens.json (source unique) → Dart (Flutter) + CSS (admin), contraste WCAG vérifié.",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./build/tokens.css",
+    "./tokens.json": "./tokens.json"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "lint": "node build.mjs --check",
+    "test": "node build.mjs --check --report"
+  }
+}

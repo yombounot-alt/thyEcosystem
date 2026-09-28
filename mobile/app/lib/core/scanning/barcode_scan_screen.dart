@@ -118,7 +118,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xCC000000), Color(0x00000000)],
+                    colors: [ThyScrims.camera, ThyScrims.cameraFade],
                   ),
                 ),
               ),
@@ -155,7 +155,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                             return IconButton(
                               icon: Icon(
                                 on ? Icons.flash_on : Icons.flash_off,
-                                color: on ? Colors.amber : Colors.white,
+                                color: on ? ThyPalette.gold400 : Colors.white,
                               ),
                               tooltip: on ? 'Éteindre la lampe' : 'Allumer la lampe',
                               onPressed: () => _controller.toggleTorch(),
@@ -170,7 +170,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                     decoration: const BoxDecoration(
-                      color: Color(0xCC000000),
+                      color: ThyScrims.camera,
                       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     child: Column(
@@ -181,7 +181,10 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                             children: [
                               Icon(
                                 feedback.isProblem ? Icons.error_outline : Icons.check_circle,
-                                color: feedback.isProblem ? AppColors.danger : AppColors.success,
+                                color:
+                                    feedback.isProblem
+                                        ? context.colors.danger
+                                        : context.colors.success,
                               ),
                               const SizedBox(width: 10),
                               Expanded(

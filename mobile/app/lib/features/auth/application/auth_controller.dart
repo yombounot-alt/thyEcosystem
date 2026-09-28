@@ -30,17 +30,7 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> _loadProfile() async {
     try {
-      var profile = await ref.read(authApiProvider).me();
-      // Signed in with a business but no active one (fresh session, new device): pick it up.
-      // The oldest business comes first; a picker for several businesses is a later feature.
-      if (profile.activeBusinessId == null && profile.businesses.isNotEmpty) {
-        final token = await ref.read(authApiProvider).activateBusiness(profile.businesses.first.id);
-        await ref.read(tokenStorageProvider).saveAccessToken(token);
-        profile = await ref.read(authApiProvider).me();
-      }
-      // Cached answers belong to this user + business only.
-      ref.read(offlineScopeProvider.notifier).set('${profile.id}:${profile.activeBusinessId}');
-      state = AuthState(status: _statusFor(profile), profile: profile);
+      _apply(await _resolveProfile());
     } on ApiException catch (e) {
       if (e.statusCode == 401 || e.statusCode == 403) {
         // The server itself says this session is over.
@@ -53,6 +43,25 @@ class AuthController extends Notifier<AuthState> {
     } catch (_) {
       state = const AuthState(status: AuthStatus.unreachable);
     }
+  }
+
+  /// The profile, with an active business picked when the user has some but none is active (fresh
+  /// session, new device, or removed from the business they were working in): the oldest one. The
+  /// user can switch from the "Plus" tab.
+  Future<UserProfile> _resolveProfile() async {
+    var profile = await ref.read(authApiProvider).me();
+    if (profile.activeBusinessId == null && profile.businesses.isNotEmpty) {
+      final token = await ref.read(authApiProvider).activateBusiness(profile.businesses.first.id);
+      await ref.read(tokenStorageProvider).saveAccessToken(token);
+      profile = await ref.read(authApiProvider).me();
+    }
+    return profile;
+  }
+
+  void _apply(UserProfile profile) {
+    // Cached answers belong to this user + business only.
+    ref.read(offlineScopeProvider.notifier).set('${profile.id}:${profile.activeBusinessId}');
+    state = AuthState(status: _statusFor(profile), profile: profile);
   }
 
   AuthStatus _statusFor(UserProfile profile) {
@@ -96,6 +105,24 @@ class AuthController extends Notifier<AuthState> {
   Future<void> onBusinessCreated(String accessToken) async {
     await ref.read(tokenStorageProvider).saveAccessToken(accessToken);
     await _loadProfile();
+  }
+
+  /// Works in another business from now on (the user must be a member: the server checks). The
+  /// offline cache is scoped per business, so the screens reload that business's data.
+  Future<void> switchBusiness(String businessId) async {
+    final token = await ref.read(authApiProvider).activateBusiness(businessId);
+    await ref.read(tokenStorageProvider).saveAccessToken(token);
+    await _loadProfile();
+  }
+
+  /// Re-reads the profile after a change made elsewhere (name, role, a business joined). Unlike the
+  /// start-up load, a failure here keeps the current state: the change will show up next time.
+  Future<void> refreshProfile() async {
+    try {
+      _apply(await _resolveProfile());
+    } catch (_) {
+      // Keep what is on screen.
+    }
   }
 
   Future<void> logout() async {

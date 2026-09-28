@@ -28,23 +28,23 @@ class OfflineBanner extends ConsumerWidget {
     final IconData icon;
     final String text;
     if (failed > 0) {
-      color = AppColors.danger;
+      color = context.colors.danger;
       icon = Icons.error_outline;
       text =
           '${_sales(failed)} à vérifier : le serveur a refusé ${failed > 1 ? 'ces ventes' : 'cette vente'}.';
     } else if (syncing) {
-      color = AppColors.warning;
+      color = context.colors.warning;
       icon = Icons.sync;
       text = 'Envoi de ${_sales(waiting)}…';
     } else if (waiting > 0) {
-      color = AppColors.warning;
+      color = context.colors.warning;
       icon = online ? Icons.cloud_upload_outlined : Icons.cloud_off_outlined;
       text =
           online
               ? '${_sales(waiting)} à envoyer.'
               : 'Hors ligne · ${_sales(waiting)} enregistrée${waiting > 1 ? 's' : ''} sur ce téléphone.';
     } else {
-      color = AppColors.warning;
+      color = context.colors.warning;
       icon = Icons.cloud_off_outlined;
       text = 'Hors ligne — les ventes seront enregistrées sur ce téléphone.';
     }

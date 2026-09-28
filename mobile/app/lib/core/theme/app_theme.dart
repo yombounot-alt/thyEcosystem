@@ -1,81 +1,140 @@
 import 'package:flutter/material.dart';
 
-/// Premium, calm palette per the product brief: generous whitespace, no visual noise.
-class AppColors {
-  AppColors._();
+import 'thy_tokens.g.dart';
 
-  static const primary = Color(0xFF0F6E4E); // deep green — trust, growth
-  static const primaryDark = Color(0xFF0A4D37);
-  static const accent = Color(0xFFE8A33D); // warm amber for highlights/alerts
-  static const danger = Color(0xFFD64545);
-  static const warning = Color(0xFFE8A33D);
-  static const success = Color(0xFF2E9E5B);
-  static const background = Color(0xFFF7F8F6);
-  static const surface = Color(0xFFFFFFFF);
-  static const textPrimary = Color(0xFF1B2320);
-  static const textSecondary = Color(0xFF6B7570);
-  static const border = Color(0xFFE3E6E2);
+export 'thy_tokens.g.dart' show ThyColors, ThyPalette;
+
+/// `context.colors.primary` : la couleur sémantique du mode (clair/sombre) en cours. Les écrans
+/// n'utilisent QUE ces couleurs — jamais un hexadécimal en dur (vérifié par
+/// test/design_system_test.dart). Valeurs : shared/design-tokens/tokens.json.
+extension ThyColorsContext on BuildContext {
+  ThyColors get colors => Theme.of(this).extension<ThyColors>() ?? ThyColors.light;
 }
 
+/// Voiles posés sur une image caméra ou une photo : noirs translucides dans les DEUX modes (la
+/// caméra est toujours sombre) — seules couleurs non issues des tokens de marque, et définies ici.
+abstract final class ThyScrims {
+  static const camera = Color(0xCC000000);
+  static const cameraFade = Color(0x00000000);
+  static const photoPlaceholder = Color(0x11000000);
+}
+
+/// Thèmes THY clair et sombre, construits sur les tokens de la charte (docs/brand/README.md §4).
+/// Aplats par défaut ; l'or reste un accent décoratif (jamais une couleur de texte, sauf
+/// `accentText`).
 class AppTheme {
   AppTheme._();
 
-  static ThemeData light() {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
-    ).copyWith(primary: AppColors.primary, error: AppColors.danger);
+  static ThemeData light() => _build(ThyColors.light, Brightness.light);
 
+  static ThemeData dark() => _build(ThyColors.dark, Brightness.dark);
+
+  static ThemeData _build(ThyColors c, Brightness brightness) {
+    final scheme = ColorScheme(
+      brightness: brightness,
+      primary: c.primary,
+      onPrimary: c.onPrimary,
+      primaryContainer: c.primaryContainer,
+      onPrimaryContainer: c.onPrimaryContainer,
+      secondary: c.accent,
+      onSecondary: c.onAccent,
+      tertiary: c.accentText,
+      onTertiary: c.background,
+      error: c.danger,
+      onError: brightness == Brightness.light ? ThyPalette.slateWhite : c.background,
+      errorContainer: c.dangerContainer,
+      onErrorContainer: c.danger,
+      surface: c.background,
+      onSurface: c.onSurface,
+      onSurfaceVariant: c.onSurfaceMuted,
+      surfaceContainerLowest: c.background,
+      surfaceContainerLow: c.surface,
+      surfaceContainer: c.surface,
+      surfaceContainerHigh: c.surfaceRaised,
+      surfaceContainerHighest: c.surfaceRaised,
+      outline: c.border,
+      outlineVariant: c.border,
+    );
+
+    final radius12 = BorderRadius.circular(12);
     return ThemeData(
       useMaterial3: true,
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: AppColors.background,
-      textTheme: const TextTheme(
-        headlineMedium: TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-        titleLarge: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-        bodyMedium: TextStyle(color: AppColors.textPrimary),
-        bodySmall: TextStyle(color: AppColors.textSecondary),
+      brightness: brightness,
+      colorScheme: scheme,
+      extensions: [c],
+      scaffoldBackgroundColor: c.background,
+      dividerColor: c.border,
+      textTheme: TextTheme(
+        headlineMedium: TextStyle(fontWeight: FontWeight.w700, color: c.onSurface),
+        titleLarge: TextStyle(fontWeight: FontWeight.w600, color: c.onSurface),
+        bodyMedium: TextStyle(color: c.onSurface),
+        bodySmall: TextStyle(color: c.onSurfaceMuted),
       ),
-      appBarTheme: const AppBarThemeData(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+      appBarTheme: AppBarThemeData(
+        backgroundColor: c.background,
+        foregroundColor: c.onSurface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
       ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: c.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
+        border: OutlineInputBorder(borderRadius: radius12, borderSide: BorderSide(color: c.border)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: radius12,
+          borderSide: BorderSide(color: c.border),
         ),
+        // Anneau de focus visible (charte §4 `focusRing`) : clavier, lecteur d'écran.
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: radius12,
+          borderSide: BorderSide(color: c.focusRing, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: radius12,
+          borderSide: BorderSide(color: c.danger),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: c.primary,
+          foregroundColor: c.onPrimary,
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: radius12),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.onPrimary,
+          shape: RoundedRectangleBorder(borderRadius: radius12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: c.primary,
+          side: BorderSide(color: c.border),
+          shape: RoundedRectangleBorder(borderRadius: radius12),
+        ),
+      ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: c.surfaceRaised,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: c.border),
         ),
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: c.surfaceRaised,
+        indicatorColor: c.primaryContainer,
+        surfaceTintColor: Colors.transparent,
+      ),
+      snackBarTheme: SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      badgeTheme: BadgeThemeData(backgroundColor: c.danger, textColor: c.background),
     );
   }
 }

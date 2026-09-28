@@ -26,8 +26,8 @@ class SalesHistoryScreen extends ConsumerWidget {
           // Sales rung up offline are not in the server's list yet, but they did happen.
           if (pending.isNotEmpty)
             ListTile(
-              tileColor: AppColors.warning.withValues(alpha: 0.12),
-              leading: const Icon(Icons.cloud_upload_outlined, color: AppColors.warning),
+              tileColor: context.colors.warning.withValues(alpha: 0.12),
+              leading: Icon(Icons.cloud_upload_outlined, color: context.colors.warning),
               title: Text(
                 '${pending.length} vente${pending.length > 1 ? 's' : ''} en attente d\'envoi',
               ),
@@ -96,7 +96,7 @@ class _SaleTile extends StatelessWidget {
             ),
           ),
           if (sale.isVoid)
-            const Text('Annulée', style: TextStyle(color: AppColors.danger, fontSize: 12)),
+            Text('Annulée', style: TextStyle(color: context.colors.danger, fontSize: 12)),
         ],
       ),
     );

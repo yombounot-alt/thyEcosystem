@@ -52,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(page.icon, size: 96, color: AppColors.primary),
+                        Icon(page.icon, size: 96, color: context.colors.primary),
                         const SizedBox(height: 32),
                         Text(
                           page.title,
@@ -74,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: i == _page ? 20 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: i == _page ? AppColors.primary : AppColors.border,
+                      color: i == _page ? context.colors.primary : context.colors.border,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

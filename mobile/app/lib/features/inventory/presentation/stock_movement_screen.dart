@@ -159,11 +159,11 @@ class _MovementFormState extends ConsumerState<_MovementForm> {
     final gap = counted - _product.currentStock;
     final Color color;
     if (gap == 0) {
-      color = AppColors.success;
+      color = context.colors.success;
     } else if (gap > 0) {
-      color = AppColors.warning;
+      color = context.colors.warning;
     } else {
-      color = AppColors.danger;
+      color = context.colors.danger;
     }
     final gapText =
         gap == 0 ? 'aucun écart' : 'écart de ${gap > 0 ? '+' : '−'}${formatQuantity(gap.abs())}';

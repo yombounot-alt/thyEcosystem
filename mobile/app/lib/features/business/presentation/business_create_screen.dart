@@ -4,12 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../auth/application/auth_controller.dart';
+import '../../team/application/team_providers.dart';
+import '../../team/presentation/received_invitations.dart';
 import '../application/business_providers.dart';
 import '../data/business_api.dart';
 
 class BusinessCreateScreen extends ConsumerStatefulWidget {
-  const BusinessCreateScreen({super.key});
+  /// [another]: opened from the app to add a business to an account that already has one (the
+  /// screen closes once it is created). Otherwise it is the last step of the first sign-in.
+  const BusinessCreateScreen({super.key, this.another = false});
+
+  final bool another;
 
   @override
   ConsumerState<BusinessCreateScreen> createState() => _BusinessCreateScreenState();
@@ -47,7 +55,8 @@ class _BusinessCreateScreenState extends ConsumerState<BusinessCreateScreen> {
             address: _addressController.text.trim(),
           );
       await ref.read(authControllerProvider.notifier).onBusinessCreated(result.accessToken);
-      // Navigation happens automatically via the router's redirect once auth state updates.
+      // First sign-in: the router's redirect moves on by itself once the auth state updates.
+      if (widget.another && mounted) context.pop();
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
@@ -59,7 +68,7 @@ class _BusinessCreateScreenState extends ConsumerState<BusinessCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Votre entreprise')),
+      appBar: AppBar(title: Text(widget.another ? 'Nouvelle entreprise' : 'Votre entreprise')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -68,9 +77,13 @@ class _BusinessCreateScreenState extends ConsumerState<BusinessCreateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Parlez-nous de votre commerce pour finaliser votre compte.',
-                  style: TextStyle(fontSize: 16),
+                // Someone invited this number: joining their team is usually why they are here.
+                if (!widget.another) const _PendingInvitations(),
+                Text(
+                  widget.another
+                      ? 'Chaque entreprise a ses propres produits, ventes et équipe.'
+                      : 'Parlez-nous de votre commerce pour finaliser votre compte.',
+                  style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 24),
                 AppTextField(
@@ -121,6 +134,34 @@ class _BusinessCreateScreenState extends ConsumerState<BusinessCreateScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PendingInvitations extends ConsumerWidget {
+  const _PendingInvitations();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final invitations = ref.watch(receivedInvitationsProvider).value ?? const [];
+    if (invitations.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('On vous attend dans une équipe', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        for (final invitation in invitations) ReceivedInvitationCard(invitation: invitation),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('ou')),
+              Expanded(child: Divider()),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

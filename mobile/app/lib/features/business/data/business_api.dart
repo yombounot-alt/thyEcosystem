@@ -29,6 +29,7 @@ class BusinessDetails {
     required this.id,
     required this.name,
     required this.currency,
+    this.businessType,
     this.phone,
     this.address,
   });
@@ -36,6 +37,7 @@ class BusinessDetails {
   final String id;
   final String name;
   final String currency;
+  final String? businessType;
   final String? phone;
   final String? address;
 
@@ -44,6 +46,7 @@ class BusinessDetails {
       id: json['id'] as String,
       name: json['name'] as String,
       currency: json['currency'] as String,
+      businessType: json['businessType'] as String?,
       phone: json['phone'] as String?,
       address: json['address'] as String?,
     );
@@ -58,6 +61,30 @@ class BusinessApi {
   Future<BusinessDetails> details(String businessId) async {
     try {
       final response = await _dio.get('/businesses/$businessId');
+      return BusinessDetails.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// Name, category, phone and address (currency and country are fixed once sales exist).
+  Future<BusinessDetails> update(
+    String businessId, {
+    required String name,
+    required String businessType,
+    required String phone,
+    required String address,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/businesses/$businessId',
+        data: {
+          'name': name,
+          'businessType': businessType,
+          if (phone.isNotEmpty) 'phone': phone,
+          'address': address,
+        },
+      );
       return BusinessDetails.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

@@ -29,6 +29,11 @@ jobs:
           channel: stable
           cache: true
 
+      # Tokens de design (shared/design-tokens) : le Dart généré doit être à jour avec tokens.json,
+      # et chaque paire texte/fond doit tenir le contraste WCAG dans les deux modes.
+      - name: Tokens de design à jour + contraste WCAG
+        run: node ../../shared/design-tokens/build.mjs --check --report
+
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze

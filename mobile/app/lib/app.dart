@@ -22,6 +22,9 @@ class ThyBusinessApp extends ConsumerWidget {
       title: 'THY Business',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      // Suit le réglage du téléphone (clair/sombre).
+      themeMode: ThemeMode.system,
       // The whole product is in French: this also translates the framework's own strings
       // (back/menu tooltips, date pickers, copy/paste menus).
       locale: const Locale('fr'),

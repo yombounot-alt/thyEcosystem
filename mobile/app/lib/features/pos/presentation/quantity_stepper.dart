@@ -57,7 +57,7 @@ class QuantityStepper extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.add_circle, color: AppColors.primary),
+          icon: Icon(Icons.add_circle, color: context.colors.primary),
           tooltip: 'Ajouter un',
           visualDensity: VisualDensity.compact,
           onPressed: onIncrement,

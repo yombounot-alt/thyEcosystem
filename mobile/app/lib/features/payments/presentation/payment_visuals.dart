@@ -8,16 +8,17 @@ import '../data/payment_models.dart';
 
 /// The colour and icon that stand for a kind of payment when the owner has not uploaded a logo.
 /// Deliberately generic: no operator's brand is reproduced here — the owner can upload a real logo.
-({Color color, IconData icon}) providerVisual(String provider) {
+/// Colours come from the theme ([ThyColors]) so they stay readable in light and dark mode.
+({Color color, IconData icon}) providerVisual(String provider, ThyColors c) {
   switch (provider) {
     case PaymentProvider.orangeMoney:
-      return (color: const Color(0xFFF26F21), icon: Icons.phone_android);
+      return (color: c.accentText, icon: Icons.phone_android);
     case PaymentProvider.mobileMoney:
-      return (color: const Color(0xFFE0A100), icon: Icons.smartphone);
+      return (color: c.success, icon: Icons.smartphone);
     case PaymentProvider.merchantCode:
-      return (color: AppColors.primary, icon: Icons.storefront_outlined);
+      return (color: c.primary, icon: Icons.storefront_outlined);
     default:
-      return (color: const Color(0xFF5B6770), icon: Icons.account_balance_wallet_outlined);
+      return (color: c.onSurfaceMuted, icon: Icons.account_balance_wallet_outlined);
   }
 }
 
@@ -38,7 +39,7 @@ class PaymentOptionLogo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final visual = providerVisual(provider);
+    final visual = providerVisual(provider, context.colors);
     final id = optionId;
     final bytes = hasLogo && id != null ? ref.watch(paymentLogoProvider(id)).value : null;
 
@@ -53,8 +54,9 @@ class PaymentOptionLogo extends ConsumerWidget {
                   color: visual.color.withValues(alpha: 0.14),
                   child: Icon(visual.icon, color: visual.color, size: size * 0.55),
                 )
+                // Logos are pictures made for a white background, in both themes.
                 : ColoredBox(
-                  color: Colors.white,
+                  color: ThyPalette.slateWhite,
                   child: Image.memory(
                     bytes,
                     fit: BoxFit.contain,
@@ -66,18 +68,18 @@ class PaymentOptionLogo extends ConsumerWidget {
   }
 }
 
-Color statusColor(String status) {
+Color statusColor(String status, ThyColors c) {
   switch (status) {
     case PaymentStatus.pending:
-      return const Color(0xFFE8863D); // orange
+      return c.warning;
     case PaymentStatus.submitted:
-      return const Color(0xFF2F6FDE); // blue
+      return c.info;
     case PaymentStatus.verified:
-      return AppColors.success; // green
+      return c.success;
     case PaymentStatus.rejected:
-      return AppColors.danger; // red
+      return c.danger;
     default:
-      return AppColors.textSecondary; // cancelled: grey
+      return c.onSurfaceMuted; // cancelled
   }
 }
 
@@ -89,7 +91,7 @@ class PaymentStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = statusColor(status);
+    final color = statusColor(status, context.colors);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(

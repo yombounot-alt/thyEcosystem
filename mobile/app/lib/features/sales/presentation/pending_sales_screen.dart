@@ -104,7 +104,7 @@ class _PendingTile extends ConsumerWidget {
               Icon(
                 sale.isFailed ? Icons.error_outline : Icons.schedule,
                 size: 16,
-                color: sale.isFailed ? AppColors.danger : AppColors.warning,
+                color: sale.isFailed ? context.colors.danger : context.colors.warning,
               ),
               const SizedBox(width: 6),
               Expanded(
@@ -114,7 +114,7 @@ class _PendingTile extends ConsumerWidget {
                       : "En attente d'envoi",
                   style: TextStyle(
                     fontSize: 12,
-                    color: sale.isFailed ? AppColors.danger : AppColors.warning,
+                    color: sale.isFailed ? context.colors.danger : context.colors.warning,
                   ),
                 ),
               ),

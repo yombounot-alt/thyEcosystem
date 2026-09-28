@@ -39,7 +39,7 @@ class PendingReceiptScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.cloud_done_outlined, size: 48, color: AppColors.success),
+                Icon(Icons.cloud_done_outlined, size: 48, color: context.colors.success),
                 const SizedBox(height: 12),
                 const Text(
                   "Cette vente n'est plus en attente.\nRetrouvez-la dans l'historique des ventes.",
@@ -120,7 +120,7 @@ class _StatusNote extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final failed = pending.isFailed;
-    final color = failed ? AppColors.danger : AppColors.warning;
+    final color = failed ? context.colors.danger : context.colors.warning;
 
     return Container(
       padding: const EdgeInsets.all(14),

@@ -43,8 +43,8 @@ class SalesBarChart extends StatelessWidget {
                       decoration: BoxDecoration(
                         color:
                             i == points.length - 1
-                                ? AppColors.primary
-                                : AppColors.primary.withValues(alpha: 0.35),
+                                ? context.colors.primary
+                                : context.colors.primary.withValues(alpha: 0.35),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                       ),
                     ),

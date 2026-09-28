@@ -15,7 +15,7 @@ class MovementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final incoming = movement.isIncoming;
-    final color = incoming ? AppColors.success : AppColors.danger;
+    final color = incoming ? context.colors.success : context.colors.danger;
     final note = movement.note;
     final typeLabel = MovementType.label(movement.type);
 

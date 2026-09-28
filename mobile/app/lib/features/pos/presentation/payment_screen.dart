@@ -248,13 +248,13 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             if (change > 0)
               _InfoLine(
                 icon: Icons.payments_outlined,
-                color: AppColors.success,
+                color: context.colors.success,
                 text: 'Monnaie à rendre : ${formatMoney(change, currency: currency)}',
               ),
             if (due > 0)
               _InfoLine(
                 icon: Icons.schedule,
-                color: AppColors.warning,
+                color: context.colors.warning,
                 text: 'Reste à crédit : ${formatMoney(due, currency: currency)}',
               ),
             const SizedBox(height: 12),
@@ -277,7 +277,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             if (blocker != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(blocker, style: const TextStyle(color: AppColors.danger)),
+                child: Text(blocker, style: TextStyle(color: context.colors.danger)),
               ),
             const SizedBox(height: 24),
             PrimaryButton(

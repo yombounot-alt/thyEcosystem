@@ -160,7 +160,7 @@ class _ChoosePaymentScreenState extends ConsumerState<ChoosePaymentScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(_error!.message, style: const TextStyle(color: AppColors.danger)),
+                child: Text(_error!.message, style: TextStyle(color: context.colors.danger)),
               ),
             if (payment != null) ...[const SizedBox(height: 16), _Details(payment: payment)],
           ],
@@ -184,7 +184,7 @@ class _OptionCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: selected ? AppColors.primary : AppColors.border,
+          color: selected ? context.colors.primary : context.colors.border,
           width: selected ? 2 : 1,
         ),
       ),
@@ -199,7 +199,7 @@ class _OptionCard extends StatelessWidget {
         subtitle: option.accountName == null ? null : Text(option.accountName!),
         trailing: Icon(
           selected ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: selected ? AppColors.primary : AppColors.textSecondary,
+          color: selected ? context.colors.primary : context.colors.onSurfaceMuted,
         ),
         onTap: onTap,
       ),
@@ -219,7 +219,7 @@ class _NoOptions extends ConsumerWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Icon(Icons.account_balance_wallet_outlined, size: 40, color: AppColors.primary),
+            Icon(Icons.account_balance_wallet_outlined, size: 40, color: context.colors.primary),
             const SizedBox(height: 12),
             const Text(
               'Aucun moyen de paiement n’est proposé pour le moment.',
@@ -332,7 +332,7 @@ class _Details extends ConsumerWidget {
               formatMoney(payment.amount, currency: payment.currency),
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: context.colors.primary,
               ),
             ),
             const SizedBox(height: 6),
@@ -343,9 +343,9 @@ class _Details extends ConsumerWidget {
               label: const Text('Copier le montant'),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Envoyez exactement ce montant.',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: context.colors.onSurfaceMuted),
             ),
             const Divider(height: 32),
             Text('Instructions', style: theme.textTheme.titleMedium),

@@ -224,7 +224,7 @@ class _PaymentOptionFormState extends ConsumerState<_PaymentOptionForm> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                style: TextButton.styleFrom(foregroundColor: context.colors.danger),
                 child: const Text('Supprimer'),
               ),
             ],
@@ -405,7 +405,7 @@ class _PaymentOptionFormState extends ConsumerState<_PaymentOptionForm> {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: _saving ? null : _delete,
-                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                  style: TextButton.styleFrom(foregroundColor: context.colors.danger),
                   child: const Text('Supprimer ce moyen de paiement'),
                 ),
               ],

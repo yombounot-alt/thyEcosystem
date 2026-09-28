@@ -215,7 +215,7 @@ class _DeclareFormState extends ConsumerState<_DeclareForm> {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withValues(alpha: 0.1),
+                    color: context.colors.danger.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text('Refusé : ${payment.rejectionReason}. Corrigez puis renvoyez.'),
@@ -295,9 +295,9 @@ class _DeclareFormState extends ConsumerState<_DeclareForm> {
               const SizedBox(height: 12),
               Text('Preuve de paiement (facultatif)', style: theme.textTheme.titleMedium),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Une capture d’écran aide à la vérification, mais ne valide pas le paiement.',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: context.colors.onSurfaceMuted),
               ),
               const SizedBox(height: 8),
               if (_proof != null)
@@ -338,9 +338,9 @@ class _DeclareFormState extends ConsumerState<_DeclareForm> {
                   ],
                 ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Votre paiement sera vérifié par le propriétaire avant d’être validé.',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: context.colors.onSurfaceMuted),
               ),
               const SizedBox(height: 12),
               PrimaryButton(

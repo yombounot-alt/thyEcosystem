@@ -9,6 +9,13 @@ import '../../features/auth/presentation/phone_screen.dart';
 import '../../features/auth/presentation/profile_name_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/business/presentation/business_create_screen.dart';
+import '../../features/business/presentation/business_settings_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/subscription/presentation/subscription_screen.dart';
+import '../../features/team/presentation/invite_member_screen.dart';
+import '../../features/team/presentation/received_invitations.dart';
+import '../../features/team/presentation/team_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/customers/presentation/credits_overview_screen.dart';
 import '../../features/customers/presentation/customer_detail_screen.dart';
@@ -70,6 +77,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/stock', builder: (context, state) => const ProductsListScreen()),
           GoRoute(path: '/more', builder: (context, state) => const MoreScreen()),
         ],
+      ),
+      GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/team', builder: (context, state) => const TeamScreen()),
+      GoRoute(path: '/team/invite', builder: (context, state) => const InviteMemberScreen()),
+      GoRoute(path: '/invitations', builder: (context, state) => const ReceivedInvitationsScreen()),
+      GoRoute(
+        path: '/settings/subscription',
+        builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: '/settings/business',
+        builder: (context, state) => const BusinessSettingsScreen(),
+      ),
+      // An additional business for an account that already has one ('/business/create' is the
+      // last step of the first sign-in, and redirects once a business exists).
+      GoRoute(
+        path: '/businesses/new',
+        builder: (context, state) => const BusinessCreateScreen(another: true),
       ),
       GoRoute(path: '/stock/history', builder: (context, state) => const StockHistoryScreen()),
       GoRoute(path: '/categories', builder: (context, state) => const CategoriesScreen()),

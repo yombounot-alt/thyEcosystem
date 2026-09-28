@@ -47,6 +47,13 @@ import 'package:thy_app/features/sales/application/sales_providers.dart';
 import 'package:thy_app/features/sales/offline/sales_sync_service.dart';
 import 'package:thy_app/features/sales/data/sale_models.dart';
 import 'package:thy_app/features/sales/data/sales_api.dart';
+import 'package:thy_app/features/notifications/application/notifications_providers.dart';
+import 'package:thy_app/features/notifications/data/notifications_api.dart';
+import 'package:thy_app/features/subscription/application/subscription_providers.dart';
+import 'package:thy_app/features/subscription/data/subscription_api.dart';
+import 'package:thy_app/features/team/application/team_providers.dart';
+import 'package:thy_app/features/team/data/team_api.dart';
+import 'package:thy_app/features/team/data/team_models.dart';
 
 class FakeTokenStorage extends TokenStorage {
   FakeTokenStorage({String? access, String? refresh}) : _access = access, _refresh = refresh;
@@ -106,6 +113,8 @@ class FakeAuthApi extends AuthApi {
             'payment_methods:manage',
             'reports:view',
             'finance:view_profit',
+            'members:manage',
+            'business:settings',
           ]
           : const [
             'catalog:view',
@@ -1286,6 +1295,167 @@ class FakePaymentsApi extends PaymentsApi {
   }
 }
 
+/// A team held in memory, applying the same rules as the server for what the UI relies on.
+class FakeTeamApi extends TeamApi {
+  FakeTeamApi({List<TeamMember>? members, List<ReceivedInvitation>? received})
+    : members_ =
+          members ??
+          [
+            const TeamMember(
+              userId: 'user-1',
+              fullName: 'Tamba Camara',
+              phone: '+224600000000',
+              role: 'OWNER',
+              status: 'ACTIVE',
+            ),
+          ],
+      received_ = received ?? [],
+      super(Dio());
+
+  final List<TeamMember> members_;
+  final List<SentInvitation> sent = [];
+  final List<ReceivedInvitation> received_;
+  final List<String> accepted = [];
+  final List<String> declined = [];
+
+  @override
+  Future<List<TeamMember>> members(String businessId) async => List.of(members_);
+
+  @override
+  Future<List<SentInvitation>> sentInvitations(String businessId) async => List.of(sent);
+
+  /// When set, inviting fails with it (e.g. the plan's member limit is reached).
+  ApiException? inviteError;
+
+  @override
+  Future<void> invite(String businessId, {required String phone, required String role}) async {
+    final failure = inviteError;
+    if (failure != null) throw failure;
+    if (members_.any((m) => m.phone == phone)) {
+      throw ApiException("Ce numéro fait déjà partie de l'équipe.", statusCode: 409);
+    }
+    sent.removeWhere((i) => i.phone == phone);
+    sent.add(
+      SentInvitation(
+        id: 'inv-${sent.length + 1}',
+        phone: phone,
+        role: role,
+        expiresAt: DateTime.now().add(const Duration(days: 7)),
+      ),
+    );
+  }
+
+  @override
+  Future<void> revokeInvitation(String businessId, String invitationId) async {
+    sent.removeWhere((i) => i.id == invitationId);
+  }
+
+  TeamMember _replace(String userId, {String? role, String? status}) {
+    final index = members_.indexWhere((m) => m.userId == userId);
+    final m = members_[index];
+    final next = TeamMember(
+      userId: m.userId,
+      fullName: m.fullName,
+      phone: m.phone,
+      role: role ?? m.role,
+      status: status ?? m.status,
+    );
+    members_[index] = next;
+    return next;
+  }
+
+  @override
+  Future<void> changeRole(String businessId, String userId, String role) async {
+    _replace(userId, role: role);
+  }
+
+  @override
+  Future<void> setSuspended(String businessId, String userId, {required bool suspended}) async {
+    _replace(userId, status: suspended ? 'SUSPENDED' : 'ACTIVE');
+  }
+
+  @override
+  Future<void> remove(String businessId, String userId) async {
+    members_.removeWhere((m) => m.userId == userId);
+  }
+
+  @override
+  Future<List<ReceivedInvitation>> receivedInvitations() async => List.of(received_);
+
+  @override
+  Future<String> accept(String invitationId) async {
+    final inv = received_.firstWhere((i) => i.id == invitationId);
+    received_.remove(inv);
+    accepted.add(invitationId);
+    return inv.businessId;
+  }
+
+  @override
+  Future<void> decline(String invitationId) async {
+    received_.removeWhere((i) => i.id == invitationId);
+    declined.add(invitationId);
+  }
+}
+
+class FakeSubscriptionApi extends SubscriptionApi {
+  FakeSubscriptionApi({
+    this.status = 'ACTIVE',
+    this.members = 1,
+    this.products = 0,
+    this.memberLimit = 3,
+    this.productLimit = 50,
+  }) : super(Dio());
+
+  final String status;
+  final int members;
+  final int products;
+  final int? memberLimit;
+  final int? productLimit;
+
+  @override
+  Future<SubscriptionSummary> summary(String businessId) async => SubscriptionSummary(
+    planCode: 'FREE',
+    planName: 'Gratuit',
+    status: status,
+    currentPeriodEnd: null,
+    entitlements: {
+      'members.max': memberLimit,
+      'products.max': productLimit,
+      'locations.max': 1,
+      'reports.export': 0,
+    },
+    usage: {'members.max': members, 'products.max': products},
+  );
+}
+
+class FakeNotificationsApi extends NotificationsApi {
+  FakeNotificationsApi([List<AppNotification>? items]) : items = items ?? [], super(Dio());
+
+  final List<AppNotification> items;
+  final List<String> readIds = [];
+
+  @override
+  Future<NotificationsPage> list({String? cursor, int limit = 30}) async =>
+      NotificationsPage(items: List.of(items), nextCursor: null);
+
+  @override
+  Future<int> unreadCount() async => items.where((n) => !n.isRead).length;
+
+  @override
+  Future<void> markRead(String id) async {
+    readIds.add(id);
+    final i = items.indexWhere((n) => n.id == id);
+    if (i >= 0) items[i] = items[i].markedRead();
+  }
+
+  @override
+  Future<void> markAllRead() async {
+    for (var i = 0; i < items.length; i++) {
+      items[i] = items[i].markedRead();
+    }
+  }
+}
+
 /// Boots the whole app with an already-authenticated session and the given fake APIs.
 /// Anything passed to [sharedTexts] receives the text of receipts the user shares.
 Future<void> pumpAuthenticatedApp(
@@ -1306,6 +1476,9 @@ Future<void> pumpAuthenticatedApp(
   Object? fileShareError,
   ReceiptFonts? receiptFonts,
   FakeAuthApi? authApi,
+  FakeTeamApi? team,
+  FakeNotificationsApi? notifications,
+  FakeSubscriptionApi? subscription,
   FakeTokenStorage? tokenStorage,
   MemoryLocalStore? localStore,
   Duration? syncInterval,
@@ -1343,6 +1516,10 @@ Future<void> pumpAuthenticatedApp(
         ),
         // No background timer unless a test is about it (a pending timer fails a test).
         paymentSummaryRefreshProvider.overrideWithValue(null),
+        teamApiProvider.overrideWithValue(team ?? FakeTeamApi()),
+        notificationsApiProvider.overrideWithValue(notifications ?? FakeNotificationsApi()),
+        notificationsRefreshProvider.overrideWithValue(null),
+        subscriptionApiProvider.overrideWithValue(subscription ?? FakeSubscriptionApi()),
         clipboardWriterProvider.overrideWithValue((text) async => copiedTexts?.add(text)),
         ussdLauncherProvider.overrideWithValue((code) async {
           dialedCodes?.add(code);

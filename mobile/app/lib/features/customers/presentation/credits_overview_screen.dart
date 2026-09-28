@@ -55,9 +55,9 @@ class CreditsOverviewScreen extends ConsumerWidget {
                                 Text('Total dû', style: Theme.of(context).textTheme.bodySmall),
                                 Text(
                                   formatMoney(total, currency: currency),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineMedium?.copyWith(color: AppColors.danger),
+                                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                    color: context.colors.danger,
+                                  ),
                                 ),
                               ],
                             ),
@@ -65,8 +65,8 @@ class CreditsOverviewScreen extends ConsumerWidget {
                           if (lateCount > 0)
                             Text(
                               '$lateCount en retard',
-                              style: const TextStyle(
-                                color: AppColors.danger,
+                              style: TextStyle(
+                                color: context.colors.danger,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -103,7 +103,7 @@ class _OverviewTile extends StatelessWidget {
       title: Text(credit.customer?.fullName ?? 'Client'),
       subtitle: Text(
         due == null ? 'Sans échéance' : 'Échéance : ${formatDay(due)}',
-        style: TextStyle(color: overdue ? AppColors.danger : null),
+        style: TextStyle(color: overdue ? context.colors.danger : null),
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -114,7 +114,7 @@ class _OverviewTile extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           if (overdue)
-            const Text('En retard', style: TextStyle(color: AppColors.danger, fontSize: 12)),
+            Text('En retard', style: TextStyle(color: context.colors.danger, fontSize: 12)),
         ],
       ),
     );

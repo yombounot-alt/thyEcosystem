@@ -27,6 +27,9 @@ import 'package:thy_app/features/products/data/product_models.dart';
 import 'package:thy_app/features/products/data/products_api.dart';
 import 'package:thy_app/features/sales/data/sale_models.dart';
 import 'package:thy_app/features/sales/data/sales_api.dart';
+import 'package:thy_app/features/notifications/data/notifications_api.dart';
+import 'package:thy_app/features/subscription/data/subscription_api.dart';
+import 'package:thy_app/features/team/data/team_api.dart';
 
 import 'fakes.dart';
 
@@ -34,6 +37,22 @@ const _liveBaseUrl = String.fromEnvironment('THY_API_BASE_URL');
 const _devOtp = String.fromEnvironment('THY_DEV_OTP', defaultValue: '123456');
 
 int _phoneSeq = 0;
+
+String _newPhone() {
+  final digits = '${DateTime.now().microsecondsSinceEpoch}${++_phoneSeq}';
+  return '+2246${digits.substring(digits.length - 8)}';
+}
+
+/// A client signed in as [phone] (account created on first sign-in), without any business.
+Future<(ApiClient, FakeTokenStorage)> _signedIn(String phone) async {
+  final storage = FakeTokenStorage();
+  final client = ApiClient(storage);
+  final auth = AuthApi(client.dio);
+  await auth.requestOtp(phone: phone);
+  final tokens = await auth.verifyOtp(phone: phone, code: _devOtp);
+  await storage.saveTokens(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken);
+  return (client, storage);
+}
 
 /// A client signed in as a brand-new owner of a brand-new shop, stocked like the old demo data:
 /// a "Boissons" category, "Eau minérale 1.5L" (5 000 GNF) and a customer "Mamadou Diallo".
@@ -75,6 +94,52 @@ void main() {
     'live backend contract',
     skip: _liveBaseUrl.isEmpty ? 'set --dart-define=THY_API_BASE_URL to run' : false,
     () {
+      test('plan, team invitation and notifications round-trip through the real API', () async {
+        final owner = await _loggedInClient();
+        final ownerProfile = await AuthApi(owner.dio).me();
+        final businessId = ownerProfile.activeBusinessId!;
+
+        final plan = await SubscriptionApi(owner.dio).summary(businessId);
+        expect(plan.planCode, 'FREE');
+        expect(plan.limit('members.max'), 3);
+        expect(plan.usage['members.max'], 1);
+        expect(plan.usage['products.max'], 1); // the seeded "Eau minérale"
+
+        final team = TeamApi(owner.dio);
+        final phone = _newPhone();
+        await team.invite(businessId, phone: phone, role: 'CASHIER');
+        expect((await team.sentInvitations(businessId)).single.phone, phone);
+        expect((await SubscriptionApi(owner.dio).summary(businessId)).usage['members.max'], 2);
+
+        final (invitee, inviteeStorage) = await _signedIn(phone);
+        final received = await TeamApi(invitee.dio).receivedInvitations();
+        expect(received.single.businessId, businessId);
+        expect(received.single.role, 'CASHIER');
+        expect(received.single.businessName, startsWith('Boutique live'));
+
+        final joined = await TeamApi(invitee.dio).accept(received.single.id);
+        expect(joined, businessId);
+        await inviteeStorage.saveAccessToken(await AuthApi(invitee.dio).activateBusiness(joined));
+        final inviteeProfile = await AuthApi(invitee.dio).me();
+        expect(inviteeProfile.activeBusinessId, businessId);
+        expect(inviteeProfile.businesses.single.role, 'CASHIER');
+
+        final members = await team.members(businessId);
+        expect(members.map((m) => m.role), containsAll(['OWNER', 'CASHIER']));
+
+        // The backend's outbox relay runs every few seconds: wait for the owner's notification.
+        final inbox = NotificationsApi(owner.dio);
+        var types = <String>[];
+        for (var i = 0; i < 20 && !types.contains('TEAM_MEMBER_JOINED'); i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+          types = [for (final n in (await inbox.list()).items) n.type];
+        }
+        expect(types, containsAll(['TEAM_MEMBER_JOINED', 'BUSINESS_WELCOME']));
+        expect(await inbox.unreadCount(), greaterThanOrEqualTo(2));
+        await inbox.markAllRead();
+        expect(await inbox.unreadCount(), 0);
+      });
+
       test('products, categories and stock movements round-trip through the real API', () async {
         final client = await _loggedInClient();
         final profile = await AuthApi(client.dio).me();
