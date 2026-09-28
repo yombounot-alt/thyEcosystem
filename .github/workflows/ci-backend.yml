@@ -71,6 +71,13 @@ jobs:
       DATABASE_URL: postgres://thy_app:changeme@localhost:5432/thy
       MIGRATOR_DATABASE_URL: postgres://thy_migrator:changeme@localhost:5432/thy
       REDIS_URL: redis://localhost:6379
+      # Les e2e tournent sur le stockage S3 (MinIO), le chemin de production ; l'adaptateur disque
+      # reste couvert par test/kernel/storage.e2e-spec.ts (même contrat, les deux adaptateurs).
+      STORAGE_DRIVER: s3
+      S3_ENDPOINT: http://localhost:9002
+      S3_BUCKET: thy-test
+      S3_ACCESS_KEY_ID: thy_minio
+      S3_SECRET_ACCESS_KEY: changeme123
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -92,7 +99,26 @@ jobs:
           PGPASSWORD=changeme psql -h localhost -U thy_migrator -d thy -v ON_ERROR_STOP=1 \
             -f infra/docker/postgres/init/02-extensions.sql
 
+      # MinIO ne peut pas être un `service` : il exige l'argument `server /data`, qu'un service
+      # GitHub Actions ne sait pas passer. Même image et mêmes identifiants qu'en local
+      # (infra/docker/compose.dev.yml), même port hôte 9002.
+      - name: Stockage S3 (MinIO) + bucket de test
+        run: |
+          docker run -d --name minio -p 9002:9000 -e MINIO_ROOT_USER=thy_minio \
+            -e MINIO_ROOT_PASSWORD=changeme123 minio/minio:latest server /data
+          for i in $(seq 1 30); do docker exec minio mc ready local && break; sleep 2; done
+          docker exec minio mc alias set local http://localhost:9000 thy_minio changeme123
+          docker exec minio mc mb --ignore-existing local/thy-test
+
       - run: pnpm --filter @thy/backend run build
+
+      # Le contrat OpenAPI versionné (docs/api/openapi.json) doit correspondre au code : un
+      # changement d'API sans `openapi:export` fait échouer la CI (il se voit alors en revue).
+      - name: Contrat OpenAPI à jour
+        run: |
+          pnpm --filter @thy/backend run openapi:export
+          git diff --exit-code -- docs/api/openapi.json
+
       - run: pnpm --filter @thy/backend run migrate
       - run: pnpm --filter @thy/backend run test:e2e
 

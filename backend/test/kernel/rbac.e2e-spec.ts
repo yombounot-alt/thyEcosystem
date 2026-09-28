@@ -33,9 +33,8 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
       .expect(201);
     const session = await loginWithOtp(h, phone);
     await request(h.server)
-      .post(`${API}/invitations/accept`)
+      .post(`${API}/me/invitations/${invitation.body.id}/accept`)
       .set(bearer(session.accessToken))
-      .send({ token: invitation.body.token })
       .expect(200);
     const activated = await request(h.server)
       .post(`${API}/businesses/${owner.businessId}/activate`)
@@ -81,17 +80,13 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
       expect(cashier.body.permissions).not.toContain("members:manage");
     });
 
-    it("refuse d'accepter une invitation avec un autre numéro que celui invité", async () => {
+    it("refuse d'accepter une invitation adressée à un autre numéro (404 : invisible)", async () => {
       const inv = await post(owner.token, `/businesses/${owner.businessId}/invitations`, {
         phone: uniquePhone(),
         roleCode: "VIEWER",
       }).expect(201);
       const stranger = await loginWithOtp(h, uniquePhone());
-      const res = await post(stranger.accessToken, "/invitations/accept", {
-        token: inv.body.token,
-      });
-      expect(res.status).toBe(403);
-      expect(res.body.error.code).toBe("INVITATION_PHONE_MISMATCH");
+      await post(stranger.accessToken, `/me/invitations/${inv.body.id}/accept`).expect(404);
     });
 
     it("une invitation ne sert qu'une fois", async () => {
@@ -101,10 +96,8 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
         roleCode: "VIEWER",
       }).expect(201);
       const session = await loginWithOtp(h, phone);
-      await post(session.accessToken, "/invitations/accept", { token: inv.body.token }).expect(200);
-      const again = await post(session.accessToken, "/invitations/accept", {
-        token: inv.body.token,
-      });
+      await post(session.accessToken, `/me/invitations/${inv.body.id}/accept`).expect(200);
+      const again = await post(session.accessToken, `/me/invitations/${inv.body.id}/accept`);
       expect(again.status).toBe(422);
       expect(again.body.error.code).toBe("INVITATION_INVALID");
     });
@@ -116,16 +109,15 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
       }).expect(400);
     });
 
-    it("le jeton d'invitation n'est stocké que haché", async () => {
+    it("aucun secret n'est renvoyé à l'invitant", async () => {
       const inv = await post(owner.token, `/businesses/${owner.businessId}/invitations`, {
         phone: uniquePhone(),
         roleCode: "VIEWER",
       }).expect(201);
-      const row = await h.sql.query(
-        "SELECT count(*)::int AS n FROM core.business_invitations WHERE token_hash = convert_to($1, 'UTF8')",
-        [inv.body.token],
+      expect(inv.body).not.toHaveProperty("token");
+      expect(Object.keys(inv.body).sort()).toEqual(
+        ["createdAt", "expiresAt", "id", "phone", "roleCode", "status"].sort(),
       );
-      expect(row.rows[0].n).toBe(0);
     });
   });
 
@@ -282,13 +274,19 @@ describe("RBAC — rôles, invitations, surcharges de permissions (e2e)", () => 
       await get(target.token, `/businesses/${owner.businessId}/members`).expect(403);
     });
 
-    it("le propriétaire ne peut pas être restreint", async () => {
-      const res = await request(h.server)
+    it("le propriétaire ne peut pas être restreint (ni par un admin, ni par lui-même)", async () => {
+      const byAdmin = await request(h.server)
+        .put(`${API}/businesses/${owner.businessId}/members/${owner.session.userId}/permissions`)
+        .set(bearer(members.ADMIN!.token))
+        .send({ overrides: { "sales:create": false } });
+      expect(byAdmin.status).toBe(409);
+      expect(byAdmin.body.error.code).toBe("OWNER_IMMUTABLE");
+      const bySelf = await request(h.server)
         .put(`${API}/businesses/${owner.businessId}/members/${owner.session.userId}/permissions`)
         .set(bearer(owner.token))
         .send({ overrides: { "sales:create": false } });
-      expect(res.status).toBe(409);
-      expect(res.body.error.code).toBe("OWNER_PERMISSIONS_FIXED");
+      expect(bySelf.status).toBe(403);
+      expect(bySelf.body.error.code).toBe("SELF_MODIFICATION");
     });
 
     it("un caissier ne peut pas modifier les permissions (les siennes ou celles d'un autre)", async () => {

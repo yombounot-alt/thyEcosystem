@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { SubscriptionsService } from "../../subscriptions/subscriptions.service.js";
 import { BizPrisma, type BizTx } from "../biz-prisma.service.js";
 import { InventoryService } from "../inventory/inventory.service.js";
 import { CreateProductDto } from "./dto/create-product.dto.js";
@@ -13,11 +14,21 @@ export class ProductsService {
   constructor(
     private readonly biz: BizPrisma,
     private readonly inventory: InventoryService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
+  /** Limite de l'offre sur les produits ACTIFS (un produit désactivé libère sa place). */
+  private async assertProductRoom(tx: BizTx, businessId: string, limit: number | null) {
+    if (limit === null) return;
+    const active = await tx.product.count({ where: { businessId, isActive: true } });
+    this.subscriptions.assertRoomFor("products.max", limit, active);
+  }
+
   async create(businessId: string, dto: CreateProductDto, createdBy: string) {
+    const limit = await this.subscriptions.limit(businessId, "products.max");
     try {
       return await this.biz.run(businessId, async (tx) => {
+        await this.assertProductRoom(tx, businessId, limit);
         const product = await tx.product.create({
           data: {
             businessId,
@@ -101,11 +112,15 @@ export class ProductsService {
   }
 
   async update(businessId: string, id: string, dto: UpdateProductDto) {
-    await this.findOne(businessId, id);
+    const existing = await this.findOne(businessId, id);
+    // Réactiver un produit reprend une place de l'offre.
+    const reactivating = dto.isActive === true && !existing.isActive;
+    const limit = reactivating ? await this.subscriptions.limit(businessId, "products.max") : null;
     try {
-      return await this.biz.run(businessId, (tx) =>
-        tx.product.update({ where: { id }, data: dto }),
-      );
+      return await this.biz.run(businessId, async (tx) => {
+        if (reactivating) await this.assertProductRoom(tx, businessId, limit);
+        return tx.product.update({ where: { id }, data: dto });
+      });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new ConflictException(DUPLICATE_PRODUCT);

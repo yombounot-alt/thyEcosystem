@@ -1,3 +1,4 @@
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Body, Controller, HttpCode, Post } from "@nestjs/common";
 import { AllowRestricted, Authenticated, Public, RateLimit } from "../../kernel/auth/auth-types.js";
 import type { AuthUser } from "../../kernel/auth/auth-types.js";
@@ -5,6 +6,8 @@ import { CurrentUser, Meta, type ClientMeta } from "../../kernel/auth/current-us
 import { AuthService } from "./auth.service.js";
 import { OtpRequestDto, OtpVerifyDto, RefreshDto } from "./dto.js";
 
+@ApiTags("auth")
+@ApiBearerAuth()
 @Controller("auth")
 export class AuthController {
   constructor(private readonly auth: AuthService) {}

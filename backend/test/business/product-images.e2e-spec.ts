@@ -1,6 +1,7 @@
-import { existsSync, rmSync } from "fs";
+import { rmSync } from "fs";
 import * as path from "path";
 import request from "supertest";
+import { STORAGE_PROVIDER, type StoragePort } from "../../src/kernel/storage/storage.port.js";
 import { createHarness, signupAndCreateBusiness, uniquePhone, type Harness } from "../harness.js";
 
 // 1×1 PNG.
@@ -23,7 +24,10 @@ describe("Product images (e2e)", () => {
   const userA = { phone: uniquePhone(), password: "MotDePasse123!", fullName: "Photographe A" };
   const userB = { phone: uniquePhone(), password: "MotDePasse123!", fullName: "Photographe B" };
   const storageRoot = path.resolve(process.env.STORAGE_LOCAL_PATH ?? "./uploads-test");
-  const onDisk = (key: string) => existsSync(path.join(storageRoot, key));
+  // Vérifié à travers le port de stockage de l'application : vrai quel que soit le pilote
+  // (disque local ou S3/MinIO, voir STORAGE_DRIVER).
+  const isStored = async (key: string) =>
+    (await h.app.get<StoragePort>(STORAGE_PROVIDER).get(key)) !== null;
 
   const signupLoginAndCreateBusiness = (user: { phone: string }, businessName: string) =>
     signupAndCreateBusiness(h, user, businessName);
@@ -78,7 +82,7 @@ describe("Product images (e2e)", () => {
   it("stores a PNG and serves the same bytes back with safe headers", async () => {
     const res = await upload(a, productId, PNG).expect(200);
     expect(res.body.imageKey).toMatch(new RegExp(`/products/${productId}/[0-9a-f-]+\\.png$`));
-    expect(onDisk(res.body.imageKey)).toBe(true);
+    expect(await isStored(res.body.imageKey)).toBe(true);
 
     const img = await request(server)
       .get(`/api/v1/products/${productId}/image`)
@@ -106,8 +110,8 @@ describe("Product images (e2e)", () => {
     const res = await upload(a, productId, JPEG, "nouvelle.jpg").expect(200);
     expect(res.body.imageKey).not.toBe(oldKey);
     expect(res.body.imageKey.endsWith(".jpg")).toBe(true);
-    expect(onDisk(oldKey)).toBe(false);
-    expect(onDisk(res.body.imageKey)).toBe(true);
+    expect(await isStored(oldKey)).toBe(false);
+    expect(await isStored(res.body.imageKey)).toBe(true);
 
     const img = await request(server)
       .get(`/api/v1/products/${productId}/image`)
@@ -185,7 +189,7 @@ describe("Product images (e2e)", () => {
       .set(auth(a))
       .expect(200);
     expect(after.body.imageKey).toBe(before.body.imageKey);
-    expect(onDisk(after.body.imageKey)).toBe(true);
+    expect(await isStored(after.body.imageKey)).toBe(true);
   });
 
   it("removes the photo: key cleared, file deleted, reading it is a 404 again", async () => {
@@ -200,7 +204,7 @@ describe("Product images (e2e)", () => {
       .set(auth(a))
       .expect(200);
     expect(res.body.imageKey).toBeNull();
-    expect(onDisk(key)).toBe(false);
+    expect(await isStored(key)).toBe(false);
     await request(server).get(`/api/v1/products/${productId}/image`).set(auth(a)).expect(404);
 
     // Removing a photo that is already gone is harmless.

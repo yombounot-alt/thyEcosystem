@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { SubscriptionsModule } from "../subscriptions/subscriptions.module.js";
 import { BizPrisma } from "./biz-prisma.service.js";
 import { CategoriesController } from "./categories/categories.controller.js";
 import { CategoriesService } from "./categories/categories.service.js";
@@ -30,6 +31,7 @@ import { SalesService } from "./sales/sales.service.js";
  * Le stockage (photos, logos, preuves) vient de STORAGE_PROVIDER, exporté par le KernelModule global.
  */
 @Module({
+  imports: [SubscriptionsModule],
   controllers: [
     CategoriesController,
     ProductsController,

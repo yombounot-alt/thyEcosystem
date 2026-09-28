@@ -89,9 +89,8 @@ describe("/me et fiche d'entreprise — ce dont l'app a besoin pour démarrer (e
       .expect(201);
     const member = await loginWithOtp(h, phone);
     await request(h.server)
-      .post(`${API}/invitations/accept`)
+      .post(`${API}/me/invitations/${invitation.body.id}/accept`)
       .set(bearer(member.accessToken))
-      .send({ token: invitation.body.token })
       .expect(200);
     await request(h.server)
       .put(`${API}/businesses/${business.businessId}/members/${member.userId}/permissions`)
@@ -131,9 +130,8 @@ describe("/me et fiche d'entreprise — ce dont l'app a besoin pour démarrer (e
         .expect(201);
       const viewer = await loginWithOtp(h, phone);
       await request(h.server)
-        .post(`${API}/invitations/accept`)
+        .post(`${API}/me/invitations/${invitation.body.id}/accept`)
         .set(bearer(viewer.accessToken))
-        .send({ token: invitation.body.token })
         .expect(200);
 
       for (const token of [created.body.accessToken, viewer.accessToken]) {

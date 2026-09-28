@@ -90,6 +90,20 @@ export class SalesService {
     throw new Error("unreachable");
   }
 
+  /**
+   * Numéro suivant du compteur de l'entreprise (biz.sale_counters, migration 0008). Le verrou de
+   * ligne pris par l'UPSERT sérialise les encaissements concurrents jusqu'au COMMIT : aucun doublon,
+   * et un encaissement annulé (ROLLBACK) ne consomme pas de numéro.
+   */
+  private async nextSaleNumber(tx: BizTx, businessId: string): Promise<string> {
+    const [row] = await tx.$queryRaw<{ last_number: number }[]>`
+      INSERT INTO biz.sale_counters (business_id, last_number) VALUES (${businessId}::uuid, 1)
+      ON CONFLICT (business_id) DO UPDATE SET last_number = biz.sale_counters.last_number + 1
+      RETURNING last_number`;
+    if (!row) throw new Error("nextSaleNumber: compteur sans résultat");
+    return `VTE-${String(row.last_number).padStart(4, "0")}`;
+  }
+
   private findByClientRequestId(businessId: string, clientRequestId: string) {
     return this.biz.run(businessId, (tx) =>
       tx.sale.findFirst({
@@ -205,8 +219,7 @@ export class SalesService {
         await this.assertCustomerExists(tx, businessId, dto.customerId);
       }
 
-      const saleCount = await tx.sale.count({ where: { businessId } });
-      const saleNumber = `VTE-${String(saleCount + 1).padStart(4, "0")}`;
+      const saleNumber = await this.nextSaleNumber(tx, businessId);
 
       const sale = await tx.sale.create({
         data: {
@@ -220,6 +233,7 @@ export class SalesService {
           amountPaid,
           amountDue,
           soldBy,
+          isOffline: offline,
           ...(soldAt ? { soldAt } : {}),
         },
       });

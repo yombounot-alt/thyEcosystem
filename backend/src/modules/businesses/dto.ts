@@ -3,7 +3,7 @@ import { PHONE_E164 } from "../auth/dto.js";
 
 /** Rôles assignables via l'API. OWNER en est exclu : le transfert de propriété est un flux dédié
  * (hors périmètre Phase 0), pas un simple changement de rôle — docs/blueprint/04-identity-access.md §4.2. */
-const ASSIGNABLE_ROLES = [
+export const ASSIGNABLE_ROLES = [
   "ADMIN",
   "MANAGER",
   "CASHIER",
@@ -45,23 +45,49 @@ export class CreateBusinessDto {
   address?: string;
 }
 
-export class InviteMemberDto {
+/**
+ * Fiche modifiable de l'entreprise. Devise et pays sont figés après création : ils déterminent le
+ * sens de tous les montants déjà enregistrés.
+ */
+export class UpdateBusinessDto {
+  @IsOptional()
+  @IsString()
+  @Length(1, 120)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  businessType?: string;
+
+  @IsOptional()
   @Matches(PHONE_E164)
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  address?: string;
+}
+
+export class InviteMemberDto {
+  @Matches(PHONE_E164, {
+    message: "phone doit être au format international E.164 (ex. +224600000000)",
+  })
   phone!: string;
 
   @IsIn(ASSIGNABLE_ROLES)
   roleCode!: (typeof ASSIGNABLE_ROLES)[number];
 }
 
-export class AcceptInvitationDto {
-  @IsString()
-  @Length(16, 100)
-  token!: string;
-}
-
 export class ChangeMemberRoleDto {
   @IsIn(ASSIGNABLE_ROLES)
   roleCode!: (typeof ASSIGNABLE_ROLES)[number];
+}
+
+export class ChangeMemberStatusDto {
+  @IsIn(["ACTIVE", "SUSPENDED"])
+  status!: "ACTIVE" | "SUSPENDED";
 }
 
 /**

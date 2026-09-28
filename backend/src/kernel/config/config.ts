@@ -28,9 +28,44 @@ export interface AppConfig {
    * production.
    */
   sms: { driver: "console"; fixedOtp?: string };
-  /** Stockage de fichiers : seul le disque local existe (développement/tests) — voir StoragePort. */
-  storage: { driver: "local"; localPath: string };
+  /**
+   * Stockage de fichiers (voir StoragePort) : disque local en développement, S3-compatible (MinIO,
+   * ou Cloud Storage via son interop S3 — ADR-012) ailleurs. Le disque local est refusé en production.
+   */
+  storage: { driver: "local" | "s3"; localPath: string; s3?: S3Config };
   rateLimitEnabled: boolean;
+  /**
+   * Relais d'outbox : dépile les événements métier vers leurs consommateurs (notifications…).
+   * Désactivé dans les tests (qui le pilotent à la main, sans minuterie de fond).
+   */
+  outbox: { relayEnabled: boolean; pollIntervalMs: number };
+  /** Notifications push : seul l'adaptateur `console` existe (aucun projet Firebase réel encore). */
+  push: { driver: "console" };
+  /** Contrat OpenAPI servi sur /api/v1/openapi.json (défaut : oui hors production). */
+  openApiEnabled: boolean;
+  /**
+   * Observabilité (docs/blueprint/12-devops-monitoring.md §5). Erreurs → Sentry si `SENTRY_DSN` ;
+   * traces → OTLP si `OTEL_EXPORTER_OTLP_ENDPOINT` (voir src/instrumentation.ts). Rien n'est
+   * envoyé tant que ces variables sont absentes.
+   */
+  observability: {
+    sentryDsn?: string;
+    /** Étiquette d'environnement des événements (`staging`, `production`…). */
+    environment: string;
+    /** Version déployée (SHA de l'image, révision Cloud Run…). */
+    release?: string;
+  };
+}
+
+export interface S3Config {
+  /** Ex. `http://localhost:9002` (MinIO) ou `https://storage.googleapis.com` (GCS). */
+  endpoint: string;
+  region: string;
+  bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  /** Adressage `endpoint/bucket/clé` (MinIO, GCS) plutôt que `bucket.endpoint/clé`. */
+  forcePathStyle: boolean;
 }
 
 const DEV_SECRET = "dev-only-secret-change-me-dev-only-secret-change-me";
@@ -44,6 +79,39 @@ function num(v: string | undefined, def: number): number {
 function bool(v: string | undefined, def: boolean): boolean {
   if (v === undefined || v === "") return def;
   return ["1", "true", "yes"].includes(v.toLowerCase());
+}
+
+function loadStorage(env: NodeJS.ProcessEnv): AppConfig["storage"] {
+  const driver = (env.STORAGE_DRIVER ?? "local").toLowerCase();
+  if (driver !== "local" && driver !== "s3")
+    throw new Error(`STORAGE_DRIVER invalide: "${driver}" (local ou s3)`);
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- voir plus bas (JWT_SECRET)
+  const localPath = env.STORAGE_LOCAL_PATH || "./uploads";
+  if (driver === "local") return { driver, localPath };
+  const missing: string[] = [];
+  const need = (name: string, value: string | undefined): string => {
+    if (!value) missing.push(name);
+    return value ?? "";
+  };
+  const endpoint = need("endpoint", env.S3_ENDPOINT);
+  const bucket = need("bucket", env.S3_BUCKET);
+  const accessKeyId = need("accessKeyId", env.S3_ACCESS_KEY_ID);
+  const secretAccessKey = need("secretAccessKey", env.S3_SECRET_ACCESS_KEY);
+  if (missing.length)
+    throw new Error(`STORAGE_DRIVER=s3 : configuration manquante (${missing.join(", ")})`);
+  return {
+    driver,
+    localPath,
+    s3: {
+      endpoint,
+      bucket,
+      accessKeyId,
+      secretAccessKey,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- vide ⇒ défaut
+      region: env.S3_REGION || "auto",
+      forcePathStyle: bool(env.S3_FORCE_PATH_STYLE, true),
+    },
+  };
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -80,9 +148,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     defaultCountry: (env.DEFAULT_COUNTRY ?? "GN").toUpperCase(),
     defaultCurrency: (env.DEFAULT_CURRENCY ?? "GNF").toUpperCase(),
     sms: { driver: "console", ...(env.DEV_FIXED_OTP ? { fixedOtp: env.DEV_FIXED_OTP } : {}) },
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- voir plus haut
-    storage: { driver: "local", localPath: env.STORAGE_LOCAL_PATH || "./uploads" },
+    storage: loadStorage(env),
     rateLimitEnabled: bool(env.RATE_LIMIT_ENABLED, true),
+    outbox: {
+      relayEnabled: bool(env.OUTBOX_RELAY_ENABLED, true),
+      pollIntervalMs: num(env.OUTBOX_POLL_INTERVAL_MS, 2000),
+    },
+    push: { driver: "console" },
+    openApiEnabled: bool(env.OPENAPI_ENABLED, nodeEnv !== "production"),
+    observability: {
+      ...(env.SENTRY_DSN ? { sentryDsn: env.SENTRY_DSN } : {}),
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- vide ⇒ défaut
+      environment: env.SENTRY_ENVIRONMENT || nodeEnv,
+      // K_REVISION : révision Cloud Run, posée automatiquement par la plateforme.
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- vide ⇒ absent
+      ...(env.APP_RELEASE || env.K_REVISION ? { release: env.APP_RELEASE || env.K_REVISION } : {}),
+    },
   };
 
   validateConfig(cfg);
@@ -103,17 +184,24 @@ export function validateConfig(cfg: AppConfig): void {
     );
   if (cfg.sms.fixedOtp !== undefined)
     errors.push("DEV_FIXED_OTP est interdit en production (code OTP prévisible)");
-  // Ces deux comparaisons sont toujours vraies TANT QUE ces types n'ont qu'une seule valeur
-  // possible (aucun autre adaptateur SMS/stockage implémenté) — gardées pour rester le filet de
-  // sécurité qu'elles redeviendront dès qu'un second adaptateur (ADR-005, ADR-012) existera.
+  // Cette comparaison est toujours vraie TANT QUE ce type n'a qu'une seule valeur possible (aucun
+  // adaptateur SMS réel) — gardée pour rester le filet de sécurité qu'elle redeviendra dès qu'un
+  // second adaptateur (ADR-005) existera.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cfg.sms.driver === "console")
     errors.push('SMS_DRIVER ne peut pas être "console" en production');
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cfg.storage.driver === "local")
     errors.push(
       "Le stockage sur disque local est interdit en production (adaptateur S3/GCS requis, ADR-012)",
     );
+  // Même logique que ci-dessus : tautologie tant qu'il n'existe qu'un adaptateur push.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (cfg.push.driver === "console")
+    errors.push(
+      'Le push "console" (aucune livraison réelle) est interdit en production (FCM requis)',
+    );
+  if (cfg.storage.s3 && !cfg.storage.s3.endpoint.startsWith("https://"))
+    errors.push("S3_ENDPOINT doit être en https en production");
   if (!cfg.rateLimitEnabled)
     errors.push("RATE_LIMIT_ENABLED ne peut pas être désactivé en production");
   if (errors.length)

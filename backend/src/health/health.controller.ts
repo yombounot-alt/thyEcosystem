@@ -1,8 +1,11 @@
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Controller, Get, ServiceUnavailableException } from "@nestjs/common";
 import { Public } from "../kernel/auth/auth-types.js";
 import { Db } from "../kernel/db/db.service.js";
 import { RedisService } from "../kernel/redis/redis.service.js";
 
+@ApiTags("health")
+@ApiBearerAuth()
 @Controller("health")
 export class HealthController {
   constructor(

@@ -9,3 +9,5 @@ if (existsSync(".env")) process.loadEnvFile(".env");
 process.env.RATE_LIMIT_ENABLED = "false";
 process.env.STORAGE_LOCAL_PATH ??= "./uploads-test";
 process.env.NODE_ENV = "test";
+// Le relais d'outbox est piloté à la main par les tests (drainOutbox), jamais par une minuterie.
+process.env.OUTBOX_RELAY_ENABLED = "false";

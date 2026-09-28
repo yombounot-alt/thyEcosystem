@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { BizPrisma, type BizTx } from "../biz-prisma.service.js";
+import { emitBizEvent } from "../common/outbox.js";
 import { CreateMovementDto } from "./dto/create-movement.dto.js";
 import { InventoryMovementType, movementSign } from "./inventory-movement.types.js";
 
@@ -37,14 +38,26 @@ export class InventoryService {
     }
 
     const delta = movementSign(params.type) * Number(params.quantity);
-    const newStock = Number(product.currentStock) + delta;
-    if (newStock < 0 && !params.allowNegativeStock) {
+    // Mise à jour ATOMIQUE (incrément en base, pas « lire puis réécrire une valeur ») : deux ventes
+    // simultanées du même produit décrémentent bien deux fois, et la condition `gte` rend le refus
+    // « stock insuffisant » exact même en concurrence (la ligne est verrouillée par l'UPDATE).
+    const guarded = delta < 0 && !params.allowNegativeStock;
+    const updated = await tx.product.updateMany({
+      where: {
+        id: product.id,
+        businessId: params.businessId,
+        ...(guarded ? { currentStock: { gte: -delta } } : {}),
+      },
+      data: { currentStock: { increment: delta } },
+    });
+    if (updated.count === 0) {
+      const fresh = await tx.product.findUnique({ where: { id: product.id } });
       throw new BadRequestException(
-        `Stock insuffisant pour ${product.name} (disponible : ${product.currentStock.toString()}).`,
+        `Stock insuffisant pour ${product.name} (disponible : ${(fresh ?? product).currentStock.toString()}).`,
       );
     }
-
-    await tx.product.update({ where: { id: product.id }, data: { currentStock: newStock } });
+    const after = await tx.product.findUniqueOrThrow({ where: { id: product.id } });
+    await this.alertOnThreshold(tx, params.businessId, after, delta);
 
     return tx.inventoryMovement.create({
       data: {
@@ -60,6 +73,39 @@ export class InventoryService {
         ...(params.occurredAt ? { createdAt: params.occurredAt } : {}),
       },
     });
+  }
+
+  /**
+   * Prévient les responsables du stock quand un mouvement de SORTIE fait franchir le seuil d'alerte
+   * (une seule fois, au franchissement — pas à chaque vente sous le seuil) ou passer sous zéro
+   * (vente hors ligne). Les notifications partent via l'outbox, donc seulement si la transaction réussit.
+   */
+  private async alertOnThreshold(
+    tx: BizTx,
+    businessId: string,
+    product: {
+      id: string;
+      name: string;
+      currentStock: Prisma.Decimal;
+      lowStockThreshold: Prisma.Decimal | null;
+    },
+    delta: number,
+  ) {
+    if (delta >= 0) return;
+    const stock = Number(product.currentStock);
+    const before = stock - delta;
+    const payload = { productId: product.id, productName: product.name, stock: String(stock) };
+    if (stock < 0 && before >= 0) {
+      await emitBizEvent(tx, businessId, "STOCK_NEGATIVE", "product", product.id, payload);
+      return;
+    }
+    if (product.lowStockThreshold === null) return;
+    const threshold = Number(product.lowStockThreshold);
+    if (stock <= threshold && before > threshold)
+      await emitBizEvent(tx, businessId, "STOCK_LOW", "product", product.id, {
+        ...payload,
+        threshold: String(threshold),
+      });
   }
 
   recordManualMovement(businessId: string, dto: CreateMovementDto, createdBy: string) {

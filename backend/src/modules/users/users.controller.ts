@@ -1,3 +1,4 @@
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Body, Controller, Get, Patch } from "@nestjs/common";
 import { Authenticated } from "../../kernel/auth/auth-types.js";
 import type { AuthUser } from "../../kernel/auth/auth-types.js";
@@ -5,6 +6,8 @@ import { CurrentUser } from "../../kernel/auth/current-user.js";
 import { UpdateMeDto } from "./dto.js";
 import { UsersService } from "./users.service.js";
 
+@ApiTags("me")
+@ApiBearerAuth()
 @Controller("me")
 export class UsersController {
   constructor(private readonly users: UsersService) {}

@@ -3,6 +3,7 @@ import { json, type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { randomUUID } from "node:crypto";
 import type { AppConfig } from "./kernel/config/config.js";
+import { mountOpenApi } from "./openapi.js";
 
 /**
  * Configuration HTTP commune à la production et aux tests (les tests exercent donc EXACTEMENT
@@ -40,5 +41,6 @@ export function configureApp(app: INestApplication, cfg: AppConfig): void {
     }),
   );
   app.setGlobalPrefix("api/v1", { exclude: ["health/live", "health/ready"] });
+  if (cfg.openApiEnabled) mountOpenApi(app);
   app.enableShutdownHooks();
 }

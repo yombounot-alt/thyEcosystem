@@ -1,8 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from "@nestjs/common";
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from "@nestjs/common";
 import type { Response } from "express";
 import type { AuthedRequest } from "../auth/auth-types.js";
 import { AppError } from "../errors.js";
 import { AppLogger } from "../logger.js";
+import { ERROR_REPORTER, type ErrorReporterPort } from "../observability/error-reporter.port.js";
 
 interface PgError {
   code?: string;
@@ -42,7 +43,10 @@ const HTTP_CODES: Record<number, string> = {
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: AppLogger) {}
+  constructor(
+    private readonly logger: AppLogger,
+    @Inject(ERROR_REPORTER) private readonly reporter: ErrorReporterPort,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
@@ -91,6 +95,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : undefined,
         "unhandled",
       );
+    }
+
+    // Seules les erreurs serveur (5xx) sont des anomalies à remonter : un 4xx est une réponse
+    // normale de l'API (validation, droits…), pas un incident.
+    if (status >= 500) {
+      const route = (req.route as { path?: string } | undefined)?.path;
+      this.reporter.capture(exception, {
+        requestId: req.id,
+        method: req.method,
+        ...(route ? { route } : {}),
+        ...(req.user ? { userId: req.user.id } : {}),
+        ...(req.membership ? { businessId: req.membership.businessId } : {}),
+      });
     }
 
     res.status(status).json({

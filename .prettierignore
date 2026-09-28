@@ -3,3 +3,8 @@ pnpm-lock.yaml
 **/*.g.dart
 **/*.freezed.dart
 **/*.gr.dart
+
+# Généré par backend/src/openapi-export.ts (vérifié par la CI backend)
+docs/api/openapi.json
+# Généré par shared/design-tokens/build.mjs
+shared/design-tokens/build/

@@ -2,9 +2,8 @@
 # compatible S3 de GCS (ADR-012) : une clé HMAC, pas les identifiants GCP natifs, pour que le port
 # `StoragePort` du kernel n'ait pas besoin d'un adaptateur spécifique à GCP.
 #
-# NB (2026-09) : le kernel n'a aujourd'hui qu'un adaptateur "disque local"
-# (backend/src/kernel/storage/local-disk-storage.adapter.ts) ; un adaptateur S3/GCS reste à écrire
-# (L0.8). Ce bucket existe donc par anticipation — rien ne l'utilise encore.
+# Utilisé par backend/src/kernel/storage/s3-storage.adapter.ts (STORAGE_DRIVER=s3), branché dans
+# environments/staging/main.tf (bucket + access id en variables, secret HMAC via Secret Manager).
 
 resource "google_storage_bucket" "this" {
   project                     = var.project_id

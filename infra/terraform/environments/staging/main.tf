@@ -152,6 +152,8 @@ module "secrets" {
     "redis-url"             = local.redis_url
     "jwt-secret"            = random_password.jwt_secret.result
     "hmac-pepper"           = random_password.hmac_pepper.result
+    # Clé HMAC du compte de service dédié au bucket (accès S3-compatible, ADR-012).
+    "storage-hmac-secret" = module.storage.hmac_secret
   }
   # Pas encore de fournisseur SMS/PSP réel en Phase 0 (voir docs/plans/phase-0-foundation.md L0.6) :
   # ces conteneurs existent pour que le jour où un vrai fournisseur arrive, il n'y ait qu'une
@@ -196,11 +198,18 @@ module "api" {
   env = {
     # NODE_ENV=development, pas "production" : c'est un premier déploiement de fumée (voir L0.4,
     # "image vide … répond sur /health"). En "production", validateConfig() (config.ts) exige un
-    # fournisseur SMS réel et un adaptateur de stockage S3/GCS — aucun des deux n'existe encore
-    # dans le code (L0.8). Repasser à "production" quand ce sera fait, pas avant.
+    # fournisseur SMS réel et un push FCM — pas encore écrits (le stockage S3/GCS, lui, existe et
+    # est branché ci-dessous). Repasser à "production" quand ce sera fait, pas avant.
     NODE_ENV    = "development"
     TRUST_PROXY = "true" # Cloud Run est un proxy inverse : sans ça, req.ip vaudrait l'IP interne de Google
     DB_POOL_MAX = "5"    # instance db-g1-small : peu de connexions simultanées supportées
+
+    # Stockage objet : Cloud Storage via son API d'interopérabilité S3 (adaptateur S3StorageAdapter).
+    STORAGE_DRIVER   = "s3"
+    S3_ENDPOINT      = "https://storage.googleapis.com"
+    S3_REGION        = "auto"
+    S3_BUCKET        = module.storage.bucket_name
+    S3_ACCESS_KEY_ID = module.storage.hmac_access_id
   }
   secret_env = {
     DATABASE_URL          = module.secrets.secret_ids["database-url"]
@@ -208,6 +217,7 @@ module "api" {
     REDIS_URL             = module.secrets.secret_ids["redis-url"]
     JWT_SECRET            = module.secrets.secret_ids["jwt-secret"]
     HMAC_PEPPER           = module.secrets.secret_ids["hmac-pepper"]
+    S3_SECRET_ACCESS_KEY  = module.secrets.secret_ids["storage-hmac-secret"]
   }
 
   depends_on = [module.secrets]

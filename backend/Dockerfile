@@ -61,4 +61,6 @@ USER thy
 
 # Cloud Run fixe PORT (8080 par défaut) et l'injecte tout seul ; ne pas le redéfinir ici.
 EXPOSE 8080
-CMD ["node", "dist/main.js"]
+# --import : les traces OpenTelemetry s'installent AVANT l'application (inactives sans
+# OTEL_EXPORTER_OTLP_ENDPOINT — voir src/instrumentation.ts).
+CMD ["node", "--import", "./dist/instrumentation.js", "dist/main.js"]

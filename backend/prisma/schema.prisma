@@ -92,15 +92,17 @@ model Sale {
   amountPaid      Decimal  @default(0) @map("amount_paid") @db.Decimal(14, 2)
   amountDue       Decimal  @default(0) @map("amount_due") @db.Decimal(14, 2)
   status          String   @default("completed")
+  // Encaissée hors ligne puis synchronisée : a pu faire passer le stock sous zéro.
+  isOffline       Boolean  @default(false) @map("is_offline")
   soldBy          String   @map("sold_by") @db.Uuid
   soldAt          DateTime @default(now()) @map("sold_at")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  items    SaleItem[]
-  payments Payment[]
-  credits  CustomerCredit[]
+  customer      Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items         SaleItem[]
+  payments      Payment[]
+  credits       CustomerCredit[]
   // Renseigné quand la vente a été créée par un paiement que le propriétaire a validé.
   manualPayment ManualPayment?
 
@@ -290,4 +292,12 @@ model Expense {
 
   @@index([businessId, expenseDate])
   @@map("expenses")
+}
+
+// Compteur de numérotation des ventes (migration 0008) — incrémenté en SQL par SalesService.nextSaleNumber.
+model SaleCounter {
+  businessId String @id @map("business_id") @db.Uuid
+  lastNumber Int    @map("last_number")
+
+  @@map("sale_counters")
 }
