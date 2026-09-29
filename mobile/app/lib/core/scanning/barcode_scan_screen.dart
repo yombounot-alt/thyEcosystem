@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
-import '../theme/app_theme.dart';
 import 'scan_types.dart';
 
 /// Product barcodes (what shops sell) plus QR codes, for shops that print their own labels.
@@ -266,7 +266,7 @@ class _CameraProblem extends StatelessWidget {
     if (denied) {
       message =
           "L'accès à la caméra est refusé.\nAutorisez-le dans les réglages du téléphone "
-          '(Applications → THY Business → Autorisations), puis réessayez.';
+          '(Applications → THY → Autorisations), puis réessayez.';
     } else if (unsupported) {
       message =
           'Ce téléphone ne peut pas scanner avec la caméra.\nUtilisez la recherche ou une douchette.';

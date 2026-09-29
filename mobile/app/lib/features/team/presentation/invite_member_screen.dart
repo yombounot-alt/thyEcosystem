@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/api_error_snackbar.dart';
-import '../../../core/widgets/app_text_field.dart';
-import '../../../core/widgets/primary_button.dart';
 import '../../auth/application/auth_selectors.dart';
 import '../application/team_providers.dart';
 import '../data/team_models.dart';

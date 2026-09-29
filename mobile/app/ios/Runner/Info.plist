@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Thy Business</string>
+	<string>THY</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>thy_business</string>
+	<string>THY</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -31,9 +31,9 @@
 		<string>tel</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>THY Business utilise la caméra pour photographier vos produits.</string>
+	<string>THY utilise la caméra pour photographier vos produits.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>THY Business accède à vos photos pour choisir l'image d'un produit.</string>
+	<string>THY accède à vos photos pour choisir l'image d'un produit.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

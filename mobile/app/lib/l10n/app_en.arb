@@ -1,0 +1,38 @@
+{
+  "@@locale": "en",
+
+  "appName": "THY",
+
+  "splashUnreachable": "Cannot reach the server.\nYou stay signed in: try again once the network is back.",
+  "commonRetry": "Try again",
+  "commonSignOut": "Sign out",
+  "commonContinue": "Continue",
+
+  "onboardingManage": "Run your shop simply",
+  "onboardingTrack": "Follow your sales and your stock",
+  "onboardingProfit": "Really understand your profit",
+  "onboardingOffline": "Keep selling without a connection",
+  "onboardingStart": "Get started",
+
+  "phoneTitle": "Your number",
+  "phoneIntro": "Enter your phone number: we send you a code by SMS. No password to remember.",
+  "phoneLabel": "Phone",
+  "phoneInvalid": "Invalid number (international format, e.g. +224 6…)",
+  "phoneAcceptTerms": "I accept the terms of use and the privacy policy",
+  "phoneTermsRequired": "Please accept the terms and the privacy policy.",
+  "phoneSendCode": "Get the code",
+
+  "otpTitle": "Verification",
+  "otpSentTo": "A code was sent to\n{phone}",
+  "otpNeedSixDigits": "Enter the 6 digits of the code.",
+  "otpVerify": "Verify",
+  "otpResend": "Send the code again",
+  "otpResending": "Sending...",
+  "otpResent": "Code sent again.",
+  "otpChangeNumber": "Change the number",
+
+  "nameTitle": "Welcome",
+  "nameQuestion": "What is your name?",
+  "nameLabel": "Full name",
+  "nameRequired": "Name required"
+}

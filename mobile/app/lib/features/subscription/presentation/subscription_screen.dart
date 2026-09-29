@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/formatters.dart';
 import '../../../core/widgets/async_view.dart';
 import '../application/subscription_providers.dart';

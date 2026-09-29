@@ -61,5 +61,11 @@ uploads-test/
 
 # Sorties du générateur de tokens de design (shared/design-tokens/build.mjs) : VERSIONNÉES, car la CI
 # vérifie qu'elles sont à jour (`build.mjs --check`) et l'app en a besoin pour compiler.
-!mobile/app/lib/core/theme/thy_tokens.g.dart
+!mobile/packages/thy_design_system/lib/src/theme/thy_tokens.g.dart
 !shared/design-tokens/build/
+
+# Généré par Flutter à chaque `pub get` (chemins absolus du poste) — ne se versionne pas.
+.flutter-plugins
+.flutter-plugins-dependencies
+# Paquets Dart internes (bibliothèques) : c'est l'app qui fige les versions (mobile/app/pubspec.lock).
+mobile/packages/*/pubspec.lock

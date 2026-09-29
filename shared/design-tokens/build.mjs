@@ -16,7 +16,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
 const tokens = JSON.parse(readFileSync(join(here, "tokens.json"), "utf8"));
 
-const OUT_DART = join(root, "mobile", "app", "lib", "core", "theme", "thy_tokens.g.dart");
+const DS_PACKAGE = join(root, "mobile", "packages", "thy_design_system");
+const OUT_DART = join(DS_PACKAGE, "lib", "src", "theme", "thy_tokens.g.dart");
 const OUT_CSS = join(here, "build", "tokens.css");
 const MIN = { text: 4.5, ui: 3 };
 
@@ -175,9 +176,9 @@ ${sem(dark)}
  * (fourni par Flutter).
  */
 function dartFormat(source) {
-  // Formaté DANS le projet Flutter : `dart format` y applique la largeur de ligne du projet
+  // Formaté DANS le paquet design system : `dart format` y applique sa largeur de ligne
   // (analysis_options.yaml), exactement comme la CI.
-  const dir = join(root, "mobile", "app", ".dart_tool");
+  const dir = join(DS_PACKAGE, ".dart_tool");
   mkdirSync(dir, { recursive: true });
   const file = join(dir, `thy_tokens.${process.pid}.tmp.dart`);
   try {

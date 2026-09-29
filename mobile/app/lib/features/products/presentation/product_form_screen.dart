@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
 import '../../../core/widgets/api_error_snackbar.dart';
 import '../../../core/api/api_exception.dart';
@@ -9,9 +10,7 @@ import '../../../core/api/json_helpers.dart';
 import '../../../core/media/photo_picker.dart';
 import '../../../core/scanning/barcode_scanner.dart';
 import '../../../core/theme/formatters.dart';
-import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/async_view.dart';
-import '../../../core/widgets/primary_button.dart';
 import '../../auth/application/auth_selectors.dart';
 import '../../categories/application/categories_providers.dart';
 import '../application/products_providers.dart';

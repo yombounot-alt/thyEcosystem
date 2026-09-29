@@ -35,9 +35,14 @@ jobs:
       # et chaque paire texte/fond doit tenir le contraste WCAG dans les deux modes. APRÈS
       # `pub get` : le générateur appelle `dart format`, qui lit analysis_options.yaml (lui-même
       # dépendant du paquet flutter_lints).
+      # Le paquet design system (mobile/packages/thy_design_system) a ses propres dépendances : le
+      # générateur de tokens formate sa sortie avec la configuration de ce paquet.
+      - name: Dépendances du paquet design system
+        working-directory: mobile/packages/thy_design_system
+        run: flutter pub get
       - name: Tokens de design à jour + contraste WCAG
         run: node ../../shared/design-tokens/build.mjs --check --report
-      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart format --output=none --set-exit-if-changed . ../packages
       - run: flutter analyze
 
       # test/live_api_test.dart s'auto-ignore ici : il ne s'exécute que si
@@ -46,6 +51,54 @@ jobs:
       # encore fait (docs/plans/consolidation-strategy.md).
       - run: flutter test
 
-      # Aucun JDK/SDK Android n'est requis pour le web : c'est le seul build vérifié ici pour
-      # l'instant (voir L0.10 pour un build Android/iOS complet).
+      - name: Paquet design system (analyse + tests)
+        working-directory: mobile/packages/thy_design_system
+        run: |
+          flutter analyze
+          flutter test
+
+      # Build web (sans SDK Android) ; les builds Android sont vérifiés par le job `android`.
       - run: flutter build web --release
+
+  android:
+    name: Build Android (variantes dev + prod release obfusquée)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/app
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2.23.0
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Variante dev (debug)
+        run: flutter build apk --flavor dev --debug
+
+      # Release de production : obfusquée, symboles de débogage à part (docs/blueprint/11-security.md).
+      # L'URL est un domaine réservé (.invalid) : ce build prouve que la chaîne compile, il n'est
+      # jamais publié (signé avec la clé de debug faute de android/key.properties).
+      - name: Variante prod (release obfusquée)
+        run: >-
+          flutter build apk --flavor prod --release --obfuscate
+          --split-debug-info=build/app/outputs/symbols
+          --dart-define=THY_API_BASE_URL=https://api.thy.invalid/api/v1
+
+      # Les variantes doivent être installables côte à côte : identifiants distincts, lus dans les
+      # APK produits (pas dans la configuration).
+      - name: Identifiants des APK
+        run: |
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          dev=$("$AAPT" dump packagename build/app/outputs/flutter-apk/app-dev-debug.apk)
+          prod=$("$AAPT" dump packagename build/app/outputs/flutter-apk/app-prod-release.apk)
+          echo "dev=$dev prod=$prod"
+          test "$dev" = "com.thyecosystem.app.dev"
+          test "$prod" = "com.thyecosystem.app"
+          test -n "$(ls build/app/outputs/symbols)"

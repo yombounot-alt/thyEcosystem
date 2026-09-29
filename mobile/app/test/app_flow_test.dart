@@ -15,7 +15,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [tokenStorageProvider.overrideWithValue(FakeTokenStorage())],
-        child: const ThyBusinessApp(),
+        child: const ThyApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -36,7 +36,7 @@ void main() {
           notificationsApiProvider.overrideWithValue(FakeNotificationsApi()),
           notificationsRefreshProvider.overrideWithValue(null),
         ],
-        child: const ThyBusinessApp(),
+        child: const ThyApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -109,7 +109,7 @@ void main() {
           notificationsApiProvider.overrideWithValue(FakeNotificationsApi()),
           notificationsRefreshProvider.overrideWithValue(null),
         ],
-        child: const ThyBusinessApp(),
+        child: const ThyApp(),
       ),
     );
     await tester.pumpAndSettle();

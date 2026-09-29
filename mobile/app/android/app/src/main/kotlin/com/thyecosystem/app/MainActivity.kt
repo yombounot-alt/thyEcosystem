@@ -1,4 +1,4 @@
-package com.thybusiness.thy_business
+package com.thyecosystem.app
 
 import io.flutter.embedding.android.FlutterActivity
 

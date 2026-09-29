@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/formatters.dart';
 import '../data/dashboard_models.dart';
 

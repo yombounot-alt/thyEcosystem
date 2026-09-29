@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The app talks to the THY Business API. Without this, a release build has no network at all
+    <!-- The app talks to the THY API. Without this, a release build has no network at all
          (debug/profile builds get it from their own manifests). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Scanning barcodes and taking product photos use the camera, but the app works without one
          (typing, a keyboard scanner), so it must still install on phones/tablets that have none. -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
-        android:label="THY Business"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

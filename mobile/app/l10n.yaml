@@ -1,0 +1,8 @@
+# Traductions (docs/plans/phase-0-foundation.md L0.10) : le français est la langue de référence.
+# Les classes sont générées par `flutter pub get` / `flutter gen-l10n` (pubspec: `generate: true`).
+arb-dir: lib/l10n
+template-arb-file: app_fr.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+format: true

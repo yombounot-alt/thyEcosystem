@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thy_app/app.dart';
 import 'package:thy_app/core/api/api_exception.dart';
@@ -1485,6 +1486,7 @@ Future<void> pumpAuthenticatedApp(
   FakeBarcodeScanner? barcodeScanner,
   bool cameraScanning = true,
   bool settle = true,
+  List<Override> extraOverrides = const [],
 }) async {
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
@@ -1547,8 +1549,9 @@ Future<void> pumpAuthenticatedApp(
         // Loading the real font assets needs real (not faked) async; tests that build a PDF load
         // them once up front and hand them in.
         if (receiptFonts != null) receiptFontsProvider.overrideWith((ref) => receiptFonts),
+        ...extraOverrides,
       ],
-      child: const ThyBusinessApp(),
+      child: const ThyApp(),
     ),
   );
   if (settle) await tester.pumpAndSettle();

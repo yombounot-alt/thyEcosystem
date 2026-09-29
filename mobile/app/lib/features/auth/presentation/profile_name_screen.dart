@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../core/api/api_exception.dart';
-import '../../../core/widgets/app_text_field.dart';
-import '../../../core/widgets/primary_button.dart';
 import '../application/auth_controller.dart';
 
 /// Asked once, right after the first sign-in: the sign-in itself needs only a phone number.
@@ -42,8 +42,9 @@ class _ProfileNameScreenState extends ConsumerState<ProfileNameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bienvenue')),
+      appBar: AppBar(title: Text(t.nameTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -52,15 +53,15 @@ class _ProfileNameScreenState extends ConsumerState<ProfileNameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Comment vous appelez-vous ?', style: TextStyle(fontSize: 16)),
+                Text(t.nameQuestion, style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 24),
                 AppTextField(
                   controller: _nameController,
-                  label: 'Nom complet',
-                  validator: (v) => (v == null || v.trim().length < 2) ? 'Nom requis' : null,
+                  label: t.nameLabel,
+                  validator: (v) => (v == null || v.trim().length < 2) ? t.nameRequired : null,
                 ),
                 const SizedBox(height: 24),
-                PrimaryButton(label: 'Continuer', onPressed: _submit, loading: _loading),
+                PrimaryButton(label: t.commonContinue, onPressed: _submit, loading: _loading),
               ],
             ),
           ),

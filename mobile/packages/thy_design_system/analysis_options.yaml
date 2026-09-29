@@ -1,0 +1,14 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    sort_child_properties_last: false
+
+# Même largeur de ligne que l'app (mobile/app/analysis_options.yaml) : le générateur de tokens
+# (shared/design-tokens/build.mjs) formate sa sortie avec cette configuration.
+formatter:
+  page_width: 100
+analyzer:
+  exclude:
+    - build/**

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
 
@@ -10,6 +11,7 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
     final unreachable =
         ref.watch(authControllerProvider.select((s) => s.status)) == AuthStatus.unreachable;
 
@@ -23,7 +25,7 @@ class SplashScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'THY Business',
+                'THY',
                 style: TextStyle(
                   color: ThyPalette.slateWhite,
                   fontSize: 28,
@@ -36,8 +38,8 @@ class SplashScreen extends ConsumerWidget {
               else ...[
                 const Icon(Icons.cloud_off_outlined, color: ThyPalette.slateWhite, size: 40),
                 const SizedBox(height: 12),
-                const Text(
-                  'Impossible de joindre le serveur.\nVous restez connecté : réessayez dès que le réseau est de retour.',
+                Text(
+                  t.splashUnreachable,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: ThyPalette.slateWhite),
                 ),
@@ -48,12 +50,12 @@ class SplashScreen extends ConsumerWidget {
                     foregroundColor: ThyPalette.blue900,
                   ),
                   onPressed: () => ref.read(authControllerProvider.notifier).retry(),
-                  child: const Text('Réessayer'),
+                  child: Text(t.commonRetry),
                 ),
                 TextButton(
                   style: TextButton.styleFrom(foregroundColor: ThyPalette.slateWhite),
                   onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-                  child: const Text('Se déconnecter'),
+                  child: Text(t.commonSignOut),
                 ),
               ],
             ],

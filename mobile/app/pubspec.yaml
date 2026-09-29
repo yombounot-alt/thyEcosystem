@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  thy_design_system:
+    path: ../packages/thy_design_system
   flutter_riverpod: ^3.4.3
   go_router: ^18.0.1
   dio: ^5.11.1
@@ -23,6 +25,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   mobile_scanner: ^7.4.2
   url_launcher: ^6.3.2
+  sentry_flutter: ^8.14.2
 
 dev_dependencies:
   flutter_test:
@@ -33,6 +36,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Traductions générées depuis lib/l10n/*.arb (voir l10n.yaml).
+  generate: true
   assets:
     # Embedded in the PDF receipts (see assets/fonts/README.md).
     - assets/fonts/Roboto-Regular.ttf

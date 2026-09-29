@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/modules/module_registry.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/application/auth_selectors.dart';
 import '../../auth/data/auth_models.dart';
 import '../../notifications/application/notifications_providers.dart';
-import '../../payments/application/payments_providers.dart';
 import '../../team/application/team_providers.dart';
 import '../../team/data/team_models.dart';
 import '../../sales/offline/pending_sales_repository.dart';
@@ -101,8 +101,6 @@ class MoreScreen extends ConsumerWidget {
     final unread = ref.watch(unreadNotificationsProvider).value ?? 0;
     final invitations = ref.watch(receivedInvitationsProvider).value ?? const [];
     final business = ref.watch(activeBusinessProvider);
-    final isOwner = ref.watch(canManagePaymentMethodsProvider);
-    final toVerify = ref.watch(paymentsToVerifyProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Plus')),
@@ -174,55 +172,8 @@ class MoreScreen extends ConsumerWidget {
             onTap: () => context.push('/businesses/new'),
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.people_outline),
-            title: const Text('Clients'),
-            onTap: () => context.push('/customers'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: const Text('Créances'),
-            onTap: () => context.push('/credits'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.payments_outlined),
-            title: const Text('Dépenses'),
-            onTap: () => context.push('/expenses'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.fact_check_outlined),
-            title: const Text('Paiements'),
-            subtitle:
-                toVerify > 0
-                    ? Text(
-                      toVerify > 1 ? '$toVerify paiements à vérifier' : '1 paiement à vérifier',
-                    )
-                    : null,
-            trailing: toVerify > 0 ? Badge(label: Text('$toVerify')) : null,
-            onTap: () => context.push('/payments'),
-          ),
-          if (isOwner)
-            ListTile(
-              leading: const Icon(Icons.account_balance_wallet_outlined),
-              title: const Text('Moyens de paiement'),
-              subtitle: const Text('Vos numéros Orange Money / Mobile Money et codes marchand'),
-              onTap: () => context.push('/settings/payment-methods'),
-            ),
-          ListTile(
-            leading: const Icon(Icons.receipt_long_outlined),
-            title: const Text('Historique des ventes'),
-            onTap: () => context.push('/sales'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.category_outlined),
-            title: const Text('Catégories'),
-            onTap: () => context.push('/categories'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.swap_vert),
-            title: const Text('Mouvements de stock'),
-            onTap: () => context.push('/stock/history'),
-          ),
+          // Chaque module installé apporte sa section (Business : clients, créances, paiements…).
+          for (final module in ref.watch(appModulesProvider)) ...[module.moreSection()],
           const Divider(),
           ListTile(
             leading: Icon(Icons.logout, color: context.colors.danger),

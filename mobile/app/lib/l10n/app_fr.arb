@@ -1,0 +1,39 @@
+{
+  "@@locale": "fr",
+
+  "appName": "THY",
+
+  "splashUnreachable": "Impossible de joindre le serveur.\nVous restez connecté : réessayez dès que le réseau est de retour.",
+  "commonRetry": "Réessayer",
+  "commonSignOut": "Se déconnecter",
+  "commonContinue": "Continuer",
+
+  "onboardingManage": "Gérez votre commerce simplement",
+  "onboardingTrack": "Suivez vos ventes et votre stock",
+  "onboardingProfit": "Comprenez réellement vos bénéfices",
+  "onboardingOffline": "Vendez même sans connexion",
+  "onboardingStart": "Commencer",
+
+  "phoneTitle": "Votre numéro",
+  "phoneIntro": "Entrez votre numéro de téléphone : nous vous envoyons un code par SMS. Pas de mot de passe à retenir.",
+  "phoneLabel": "Téléphone",
+  "phoneInvalid": "Numéro invalide (format international, ex. +224 6…)",
+  "phoneAcceptTerms": "J'accepte les conditions d'utilisation et la politique de confidentialité",
+  "phoneTermsRequired": "Veuillez accepter les conditions et la politique de confidentialité.",
+  "phoneSendCode": "Recevoir le code",
+
+  "otpTitle": "Vérification",
+  "otpSentTo": "Un code a été envoyé au\n{phone}",
+  "@otpSentTo": { "placeholders": { "phone": { "type": "String" } } },
+  "otpNeedSixDigits": "Entrez les 6 chiffres du code.",
+  "otpVerify": "Vérifier",
+  "otpResend": "Renvoyer le code",
+  "otpResending": "Envoi...",
+  "otpResent": "Code renvoyé.",
+  "otpChangeNumber": "Modifier le numéro",
+
+  "nameTitle": "Bienvenue",
+  "nameQuestion": "Comment vous appelez-vous ?",
+  "nameLabel": "Nom complet",
+  "nameRequired": "Nom requis"
+}

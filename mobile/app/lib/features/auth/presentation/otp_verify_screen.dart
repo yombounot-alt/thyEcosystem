@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../core/api/api_exception.dart';
-import '../../../core/widgets/primary_button.dart';
 import '../application/auth_controller.dart';
 
 class OtpVerifyScreen extends ConsumerStatefulWidget {
@@ -31,7 +32,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     if (_codeController.text.trim().length != 6) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Entrez les 6 chiffres du code.')));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).otpNeedSixDigits)));
       return;
     }
 
@@ -54,7 +55,9 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     try {
       await ref.read(authControllerProvider.notifier).requestOtp(phone: widget.phone);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code renvoyé.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).otpResent)));
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
@@ -65,15 +68,16 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Vérification')),
+      appBar: AppBar(title: Text(t.otpTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Un code a été envoyé au\n${widget.phone}', textAlign: TextAlign.center),
+              Text(t.otpSentTo(widget.phone), textAlign: TextAlign.center),
               const SizedBox(height: 32),
               TextField(
                 controller: _codeController,
@@ -85,16 +89,13 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
                 decoration: const InputDecoration(counterText: '', hintText: '••••••'),
               ),
               const SizedBox(height: 16),
-              PrimaryButton(label: 'Vérifier', onPressed: _verify, loading: _loading),
+              PrimaryButton(label: t.otpVerify, onPressed: _verify, loading: _loading),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _resending ? null : _resend,
-                child: Text(_resending ? 'Envoi...' : 'Renvoyer le code'),
+                child: Text(_resending ? t.otpResending : t.otpResend),
               ),
-              TextButton(
-                onPressed: () => context.go('/phone'),
-                child: const Text('Modifier le numéro'),
-              ),
+              TextButton(onPressed: () => context.go('/phone'), child: Text(t.otpChangeNumber)),
             ],
           ),
         ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_design_system/thy_design_system.dart';
 
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/primary_button.dart';
+import '../../../l10n/app_localizations.dart';
 
 class _OnboardingPage {
   const _OnboardingPage(this.title, this.icon);
@@ -10,11 +10,12 @@ class _OnboardingPage {
   final IconData icon;
 }
 
-const _pages = [
-  _OnboardingPage('Gérez votre commerce simplement', Icons.storefront_outlined),
-  _OnboardingPage('Suivez vos ventes et votre stock', Icons.inventory_2_outlined),
-  _OnboardingPage('Comprenez réellement vos bénéfices', Icons.trending_up),
-  _OnboardingPage('Votre assistant IA vous accompagne', Icons.auto_awesome_outlined),
+/// Only promises the app keeps today (an "AI assistant" page was removed: not built yet).
+List<_OnboardingPage> _pages(AppLocalizations t) => [
+  _OnboardingPage(t.onboardingManage, Icons.storefront_outlined),
+  _OnboardingPage(t.onboardingTrack, Icons.inventory_2_outlined),
+  _OnboardingPage(t.onboardingProfit, Icons.trending_up),
+  _OnboardingPage(t.onboardingOffline, Icons.cloud_off_outlined),
 ];
 
 class OnboardingScreen extends StatefulWidget {
@@ -36,6 +37,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final pages = _pages(t);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -45,10 +48,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Expanded(
                 child: PageView.builder(
                   controller: _controller,
-                  itemCount: _pages.length,
+                  itemCount: pages.length,
                   onPageChanged: (i) => setState(() => _page = i),
                   itemBuilder: (context, i) {
-                    final page = _pages[i];
+                    final page = pages[i];
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -67,7 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  _pages.length,
+                  pages.length,
                   (i) => AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -81,7 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              PrimaryButton(label: 'Commencer', onPressed: () => context.go('/phone')),
+              PrimaryButton(label: t.onboardingStart, onPressed: () => context.go('/phone')),
               const SizedBox(height: 16),
             ],
           ),
