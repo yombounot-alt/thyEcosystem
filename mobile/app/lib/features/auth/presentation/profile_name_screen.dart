@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../core/api/api_exception.dart';
 import '../application/auth_controller.dart';
 
 /// Asked once, right after the first sign-in: the sign-in itself needs only a phone number.

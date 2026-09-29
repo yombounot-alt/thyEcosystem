@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'app.dart';
-import 'core/api/api_config.dart';
-import 'core/config/app_environment.dart';
-import 'core/observability/crash_reporting.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

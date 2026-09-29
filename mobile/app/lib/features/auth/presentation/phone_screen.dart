@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../core/api/api_exception.dart';
 import '../application/auth_controller.dart';
 
 /// The one entry point: sign-up and sign-in are the same flow. A code sent by SMS proves the

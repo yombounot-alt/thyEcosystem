@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/api/paginated.dart';
 import 'sale_models.dart';
 
 class SalesApi {

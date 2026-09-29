@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/paginated.dart';
-import '../../../core/providers.dart';
 import '../../dashboard/application/dashboard_providers.dart';
 import '../data/customer_models.dart';
 import '../data/customers_api.dart';

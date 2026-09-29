@@ -1,7 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/api/jwt_claims.dart';
+import 'package:thy_core/thy_core.dart';
 
 String _token(Map<String, Object?> claims) {
   String b64(Object o) => base64Url.encode(utf8.encode(jsonEncode(o))).replaceAll('=', '');

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
 import 'team_models.dart';
 
 /// The team of a business (members, invitations sent) and the invitations the signed-in user

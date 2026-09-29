@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/scanning/scan_types.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

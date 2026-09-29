@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../features/subscription/data/subscription_api.dart';
-import '../api/api_exception.dart';
+import '../data/subscription_api.dart';
 
 /// Shows the server's message. When the refusal comes from the plan's limits, it also offers to
 /// open "Mon offre", so the user sees what is used and what the plan allows.

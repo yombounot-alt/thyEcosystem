@@ -1,4 +1,4 @@
-import '../../../core/api/json_helpers.dart';
+import 'package:thy_core/thy_core.dart';
 
 /// Calendar dates (credit due dates) come as "2026-09-21T00:00:00.000Z"; keep only the day so
 /// it never shifts with the device time zone.

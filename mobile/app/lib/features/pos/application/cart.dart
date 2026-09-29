@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/money.dart';
 import '../../products/data/product_models.dart';
 
 class CartLine {

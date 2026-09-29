@@ -1,11 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/offline/offline_providers.dart';
-import 'package:thy_app/core/storage/local_store.dart';
-import 'package:thy_app/core/theme/formatters.dart';
 import 'package:thy_app/features/customers/data/customer_models.dart';
 import 'package:thy_app/features/products/application/products_providers.dart';
 import 'package:thy_app/features/products/data/product_models.dart';
@@ -13,6 +9,7 @@ import 'package:thy_app/features/sales/data/sale_models.dart';
 import 'package:thy_app/features/sales/offline/pending_sale.dart';
 import 'package:thy_app/features/sales/offline/pending_sales_repository.dart';
 import 'package:thy_app/features/sales/offline/sales_sync_service.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

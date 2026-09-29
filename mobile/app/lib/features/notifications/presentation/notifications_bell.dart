@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/notifications/application/notifications_providers.dart';
+import '../application/notifications_providers.dart';
 
 /// App-bar bell with the number of unread notifications.
 class NotificationsBell extends ConsumerWidget {

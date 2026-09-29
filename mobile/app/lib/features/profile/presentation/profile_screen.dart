@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../auth/application/auth_controller.dart';
 
 /// The signed-in person: their name (shown to their team and on receipts) and their number

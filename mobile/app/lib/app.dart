@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:thy_design_system/thy_design_system.dart';
 
-import 'core/router/app_router.dart';
+import 'navigation/app_router.dart';
 import 'l10n/app_localizations.dart';
 import 'features/sales/offline/offline_warmup.dart';
 import 'features/sales/offline/sales_sync_service.dart';

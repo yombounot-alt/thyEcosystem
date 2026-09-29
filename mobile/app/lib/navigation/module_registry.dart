@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../modules/business/business_module.dart';
-import 'app_module.dart';
+import '../modules/business/business_module.dart';
 
 /// Modules installed in this build, the main one first (its home is the "Accueil" tab). Adding
 /// Marketplace or Services later = adding it here; the shell, the router and "Plus" follow.

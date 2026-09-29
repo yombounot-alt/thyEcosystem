@@ -1,4 +1,5 @@
-import '../../../core/api/json_helpers.dart';
+import 'package:thy_core/thy_core.dart';
+
 import '../../sales/data/sale_models.dart';
 import 'payment_method_models.dart';
 

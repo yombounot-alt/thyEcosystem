@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
 import 'auth_models.dart';
 
 /// Sign-up and sign-in are ONE flow: a code sent by SMS proves the phone number, and the account

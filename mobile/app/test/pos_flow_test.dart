@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/api/request_id.dart';
-import 'package:thy_app/core/theme/formatters.dart';
 import 'package:thy_app/features/business/data/business_api.dart';
 import 'package:thy_app/features/customers/data/customer_models.dart';
 import 'package:thy_app/features/pos/application/cart.dart';
 import 'package:thy_app/features/products/data/product_models.dart';
 import 'package:thy_app/features/sales/application/receipt_text.dart';
 import 'package:thy_app/features/sales/data/sale_models.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

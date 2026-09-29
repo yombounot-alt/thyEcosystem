@@ -1,4 +1,4 @@
-import '../../../core/theme/formatters.dart';
+import 'package:thy_core/thy_core.dart';
 
 /// Polite payment reminder to send to a customer by WhatsApp/SMS.
 String buildDebtReminderText({

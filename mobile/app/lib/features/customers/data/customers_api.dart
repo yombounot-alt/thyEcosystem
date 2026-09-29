@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/api/paginated.dart';
 import 'customer_models.dart';
 
 class CustomersApi {

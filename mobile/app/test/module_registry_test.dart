@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:thy_app/core/modules/app_module.dart';
-import 'package:thy_app/core/modules/module_registry.dart';
+import 'package:thy_app/navigation/module_registry.dart';
 import 'package:thy_app/modules/business/business_module.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

@@ -1,25 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../modules/module_registry.dart';
-
-import '../../features/auth/application/auth_controller.dart';
-import '../../features/auth/application/auth_state.dart';
-import '../../features/auth/presentation/onboarding_screen.dart';
-import '../../features/auth/presentation/otp_verify_screen.dart';
-import '../../features/auth/presentation/phone_screen.dart';
-import '../../features/auth/presentation/profile_name_screen.dart';
-import '../../features/auth/presentation/splash_screen.dart';
-import '../../features/business/presentation/business_create_screen.dart';
-import '../../features/business/presentation/business_settings_screen.dart';
-import '../../features/notifications/presentation/notifications_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
-import '../../features/subscription/presentation/subscription_screen.dart';
-import '../../features/team/presentation/invite_member_screen.dart';
-import '../../features/team/presentation/received_invitations.dart';
-import '../../features/team/presentation/team_screen.dart';
-import '../../features/shell/presentation/app_shell.dart';
-import '../../features/shell/presentation/more_screen.dart';
+import 'module_registry.dart';
+import '../features/auth/application/auth_controller.dart';
+import '../features/auth/application/auth_state.dart';
+import '../features/auth/presentation/onboarding_screen.dart';
+import '../features/auth/presentation/otp_verify_screen.dart';
+import '../features/auth/presentation/phone_screen.dart';
+import '../features/auth/presentation/profile_name_screen.dart';
+import '../features/auth/presentation/splash_screen.dart';
+import '../features/business/presentation/business_create_screen.dart';
+import '../features/business/presentation/business_settings_screen.dart';
+import '../features/notifications/presentation/notifications_screen.dart';
+import '../features/profile/presentation/profile_screen.dart';
+import '../features/subscription/presentation/subscription_screen.dart';
+import '../features/team/presentation/invite_member_screen.dart';
+import '../features/team/presentation/received_invitations.dart';
+import '../features/team/presentation/team_screen.dart';
+import '../features/shell/presentation/app_shell.dart';
+import '../features/shell/presentation/more_screen.dart';
 
 const _publicRoutes = {'/onboarding', '/phone', '/otp-verify'};
 

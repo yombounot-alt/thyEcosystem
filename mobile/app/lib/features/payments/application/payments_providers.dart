@@ -1,12 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/api/paginated.dart';
-import '../../../core/providers.dart';
 import '../../auth/application/auth_selectors.dart';
 import '../data/payment_method_models.dart';
 import '../data/payment_models.dart';

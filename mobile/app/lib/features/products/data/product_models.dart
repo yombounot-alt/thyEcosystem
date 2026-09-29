@@ -1,4 +1,4 @@
-import '../../../core/api/json_helpers.dart';
+import 'package:thy_core/thy_core.dart';
 
 class Product {
   const Product({

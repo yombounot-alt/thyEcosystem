@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thy_design_system/thy_design_system.dart';
@@ -11,9 +10,11 @@ import 'fakes.dart';
 /// dans le paquet (mobile/packages/thy_design_system/test).
 void main() {
   group('no hard-coded colours in the screens', () {
-    // Seul le dossier du thème définit des couleurs. Exceptions assumées : le reçu PDF (impression
-    // noir et blanc, indépendante du thème) et l'écran caméra (toujours sombre : blanc/noir).
-    const allowed = {'lib/core/theme/', 'lib/features/sales/application/receipt_pdf.dart'};
+    // Seul le paquet design system définit des couleurs. Exceptions assumées : le reçu PDF
+    // (impression noir et blanc, indépendante du thème) et l'écran caméra (toujours sombre).
+    // Le socle `thy_core` est parcouru aussi : ses écrans (caméra) suivent la même règle.
+    const roots = ['lib', '../packages/thy_core/lib'];
+    const allowed = {'lib/features/sales/application/receipt_pdf.dart'};
     final hex = RegExp(r'Color\(0x[0-9A-Fa-f]{8}\)');
     final named = RegExp(
       r'Colors\.(red|green|blue|orange|amber|grey|yellow|purple|teal|pink|indigo|cyan|brown|lime|deep\w+|light\w+)',
@@ -21,7 +22,9 @@ void main() {
     final blackOrWhite = RegExp(r'Colors\.(white|black)');
 
     Iterable<(String, int, String)> offending(bool Function(String path, String line) bad) sync* {
-      for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
+      for (final f in [
+        for (final root in roots) ...Directory(root).listSync(recursive: true).whereType<File>(),
+      ]) {
         final path = f.path.replaceAll(r'\', '/');
         if (!path.endsWith('.dart') || allowed.any(path.startsWith)) continue;
         final lines = f.readAsLinesSync();
@@ -31,6 +34,12 @@ void main() {
       }
     }
 
+    test('the scan covers the app and thy_core (guards against a silently empty check)', () {
+      final files = offending((_, _) => true).map((f) => f.$1).toSet();
+      expect(files, contains('../packages/thy_core/lib/src/scanning/barcode_scan_screen.dart'));
+      expect(files, contains('lib/features/shell/presentation/more_screen.dart'));
+    });
+
     test('no hexadecimal colour and no named Material hue', () {
       final found = offending((_, line) => hex.hasMatch(line) || named.hasMatch(line));
       expect(found.map((f) => '${f.$1}:${f.$2}  ${f.$3}'), isEmpty);
@@ -39,7 +48,7 @@ void main() {
     test('pure white/black only on the camera screen (always dark)', () {
       final found = offending(
         (path, line) =>
-            blackOrWhite.hasMatch(line) && !path.endsWith('core/scanning/barcode_scan_screen.dart'),
+            blackOrWhite.hasMatch(line) && !path.endsWith('scanning/barcode_scan_screen.dart'),
       );
       expect(found.map((f) => '${f.$1}:${f.$2}  ${f.$3}'), isEmpty);
     });

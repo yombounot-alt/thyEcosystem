@@ -1,9 +1,8 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/media/photo_picker.dart';
 import 'package:thy_app/features/payments/data/payment_method_models.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 import 'payment_helpers.dart';

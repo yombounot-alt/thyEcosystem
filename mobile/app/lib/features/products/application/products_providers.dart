@@ -1,9 +1,7 @@
 import 'dart:typed_data';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/providers.dart';
 import '../../sales/offline/pending_sales_repository.dart';
 import '../data/product_models.dart';
 import '../data/products_api.dart';

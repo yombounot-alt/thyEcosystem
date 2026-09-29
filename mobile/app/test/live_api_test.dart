@@ -4,11 +4,7 @@
 //   flutter test test/live_api_test.dart --dart-define=THY_API_BASE_URL=http://localhost:3300/api/v1
 // Every test provisions its own brand-new account and business, so runs never interfere.
 import 'dart:typed_data';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/api/api_client.dart';
-import 'package:thy_app/core/api/api_exception.dart';
-import 'package:thy_app/core/api/request_id.dart';
 import 'package:thy_app/features/auth/data/auth_api.dart';
 import 'package:thy_app/features/business/data/business_api.dart';
 import 'package:thy_app/features/categories/data/categories_api.dart';
@@ -30,6 +26,7 @@ import 'package:thy_app/features/sales/data/sales_api.dart';
 import 'package:thy_app/features/notifications/data/notifications_api.dart';
 import 'package:thy_app/features/subscription/data/subscription_api.dart';
 import 'package:thy_app/features/team/data/team_api.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

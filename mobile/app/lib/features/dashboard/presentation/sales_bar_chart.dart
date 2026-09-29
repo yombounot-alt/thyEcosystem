@@ -1,9 +1,8 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/theme/formatters.dart';
 import '../data/dashboard_models.dart';
 
 const _weekdayInitials = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];

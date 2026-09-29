@@ -1,21 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thy_app/app.dart';
-import 'package:thy_app/core/api/api_exception.dart';
-import 'package:thy_app/core/api/paginated.dart';
-import 'package:thy_app/core/media/photo_picker.dart';
-import 'package:thy_app/core/providers.dart';
-import 'package:thy_app/core/scanning/barcode_scanner.dart';
-import 'package:thy_app/core/storage/local_store.dart';
-import 'package:thy_app/core/sharing/file_sharer.dart';
-import 'package:thy_app/core/sharing/text_sharer.dart';
-import 'package:thy_app/core/storage/token_storage.dart';
 import 'package:thy_app/features/auth/application/auth_controller.dart';
 import 'package:thy_app/features/auth/data/auth_api.dart';
 import 'package:thy_app/features/auth/data/auth_models.dart';
@@ -55,6 +45,7 @@ import 'package:thy_app/features/subscription/data/subscription_api.dart';
 import 'package:thy_app/features/team/application/team_providers.dart';
 import 'package:thy_app/features/team/data/team_api.dart';
 import 'package:thy_app/features/team/data/team_models.dart';
+import 'package:thy_core/thy_core.dart';
 
 class FakeTokenStorage extends TokenStorage {
   FakeTokenStorage({String? access, String? refresh}) : _access = access, _refresh = refresh;

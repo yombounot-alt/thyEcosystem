@@ -1,9 +1,7 @@
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/api/paginated.dart';
 import 'product_models.dart';
 
 class ProductsApi {

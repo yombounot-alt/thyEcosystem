@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/theme/formatters.dart';
 import '../data/inventory_models.dart';
 
 class MovementTile extends StatelessWidget {

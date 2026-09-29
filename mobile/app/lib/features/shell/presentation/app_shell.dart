@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/modules/app_module.dart';
-import '../../../core/modules/module_registry.dart';
+import '../../../navigation/module_registry.dart';
 import '../../sales/offline/offline_banner.dart';
 
 /// Bottom navigation shared by the main tabs. It knows no module: tabs, banners and the badge of

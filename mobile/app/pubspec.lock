@@ -857,6 +857,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
+  thy_core:
+    dependency: "direct main"
+    description:
+      path: "../packages/thy_core"
+      relative: true
+    source: path
+    version: "0.1.0"
   thy_design_system:
     dependency: "direct main"
     description:

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-
-import '../../../core/api/api_exception.dart';
+import 'package:thy_core/thy_core.dart';
 
 /// Error code the server sends when an action would go past what the business's plan allows.
 const entitlementLimitReached = 'ENTITLEMENT_LIMIT_REACHED';

@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:thy_app/core/config/app_environment.dart';
-import 'package:thy_app/core/observability/crash_reporting.dart';
+import 'package:thy_core/thy_core.dart';
 
 void main() {
   group('environment (Android flavor)', () {

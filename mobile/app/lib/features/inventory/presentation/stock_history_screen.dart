@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/widgets/async_view.dart';
 import '../application/inventory_providers.dart';
 import 'movement_tile.dart';
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/api/api_exception.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thy_design_system/thy_design_system.dart';
+import 'package:thy_core/thy_core.dart';
 
 import '../../auth/application/auth_controller.dart';
 import '../../team/application/team_providers.dart';

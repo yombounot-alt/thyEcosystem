@@ -1,11 +1,10 @@
 import 'dart:typed_data';
-
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/theme/formatters.dart';
 import '../../business/data/business_api.dart';
 import '../data/sale_models.dart';
 

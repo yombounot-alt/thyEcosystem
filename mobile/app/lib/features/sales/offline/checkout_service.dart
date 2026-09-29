@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
 import '../../auth/application/auth_selectors.dart';
 import '../application/sales_providers.dart';
 import '../data/sale_models.dart';

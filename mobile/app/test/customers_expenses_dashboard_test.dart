@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/theme/formatters.dart';
 import 'package:thy_app/features/customers/application/reminder_text.dart';
 import 'package:thy_app/features/customers/data/customer_models.dart';
 import 'package:thy_app/features/dashboard/data/dashboard_models.dart';
 import 'package:thy_app/features/expenses/application/expenses_providers.dart';
 import 'package:thy_app/features/expenses/data/expense_models.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/api/api_exception.dart';
-import 'package:thy_app/core/storage/local_store.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

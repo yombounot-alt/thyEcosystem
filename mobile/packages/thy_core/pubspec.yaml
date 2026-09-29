@@ -1,0 +1,28 @@
+name: thy_core
+description: Socle technique de l'app THY — client API, session, configuration, hors-ligne, stockage local, observabilité, contrat des modules.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  thy_design_system:
+    path: ../thy_design_system
+  flutter_riverpod: ^3.4.3
+  go_router: ^18.0.1
+  dio: ^5.11.1
+  flutter_secure_storage: ^11.2.0
+  intl: ^0.20.3
+  share_plus: ^13.3.0
+  image_picker: ^1.2.0
+  shared_preferences: ^2.5.0
+  mobile_scanner: ^7.4.2
+  sentry_flutter: ^9.30.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0

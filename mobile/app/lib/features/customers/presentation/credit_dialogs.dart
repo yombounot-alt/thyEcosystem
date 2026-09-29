@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/json_helpers.dart';
-import '../../../core/theme/formatters.dart';
 import '../../sales/data/sale_models.dart';
 
 typedef PaymentEntry = ({double amount, String method, String? note});

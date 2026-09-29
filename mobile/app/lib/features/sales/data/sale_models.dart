@@ -1,4 +1,4 @@
-import '../../../core/api/json_helpers.dart';
+import 'package:thy_core/thy_core.dart';
 
 /// Payment methods the backend records. 'credit' is a UI-only choice (no payment row).
 class PaymentMethod {

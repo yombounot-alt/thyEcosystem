@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thy_core/thy_core.dart';
 
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/customers/data/customer_models.dart';
@@ -30,7 +31,6 @@ import '../../features/sales/presentation/pending_receipt_screen.dart';
 import '../../features/sales/presentation/pending_sales_screen.dart';
 import '../../features/sales/presentation/receipt_screen.dart';
 import '../../features/sales/presentation/sales_history_screen.dart';
-import '../../core/modules/app_module.dart';
 import '../../features/payments/application/payments_providers.dart';
 import 'business_more_section.dart';
 import 'business_shell_banner.dart';

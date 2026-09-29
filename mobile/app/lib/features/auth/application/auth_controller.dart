@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
-import '../../../core/offline/offline_providers.dart';
-import '../../../core/providers.dart';
 import '../data/auth_api.dart';
 import '../data/auth_models.dart';
 import 'auth_state.dart';

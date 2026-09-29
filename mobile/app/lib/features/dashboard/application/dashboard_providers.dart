@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/providers.dart';
 import '../data/dashboard_api.dart';
 import '../data/dashboard_models.dart';
 

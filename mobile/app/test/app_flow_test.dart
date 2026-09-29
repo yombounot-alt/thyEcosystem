@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:thy_app/app.dart';
-import 'package:thy_app/core/providers.dart';
 import 'package:thy_app/features/auth/application/auth_controller.dart';
 import 'package:thy_app/features/dashboard/application/dashboard_providers.dart';
 import 'package:thy_app/features/notifications/application/notifications_providers.dart';
 import 'package:thy_app/features/team/application/team_providers.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

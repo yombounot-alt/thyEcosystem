@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thy_app/core/providers.dart';
 import 'package:thy_app/features/auth/application/auth_controller.dart';
 import 'package:thy_app/features/auth/presentation/onboarding_screen.dart';
 import 'package:thy_app/features/auth/presentation/phone_screen.dart';
 import 'package:thy_app/l10n/app_localizations.dart';
+import 'package:thy_core/thy_core.dart';
 
 import 'fakes.dart';
 

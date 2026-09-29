@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/json_helpers.dart';
 import '../../customers/data/customer_models.dart';
 
 /// Categories accepted by the backend, with their French labels.

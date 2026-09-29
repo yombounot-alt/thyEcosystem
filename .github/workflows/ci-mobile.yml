@@ -51,11 +51,15 @@ jobs:
       # encore fait (docs/plans/consolidation-strategy.md).
       - run: flutter test
 
-      - name: Paquet design system (analyse + tests)
-        working-directory: mobile/packages/thy_design_system
+      # Paquets internes (mobile/packages/*) : analyse de chacun, tests quand il en a.
+      - name: Paquets (analyse + tests)
+        working-directory: mobile/packages
         run: |
-          flutter analyze
-          flutter test
+          for pkg in */; do
+            echo "::group::${pkg%/}"
+            (cd "$pkg" && flutter pub get && flutter analyze && { [ ! -d test ] || flutter test; }) || exit 1
+            echo "::endgroup::"
+          done
 
       # Build web (sans SDK Android) ; les builds Android sont vérifiés par le job `android`.
       - run: flutter build web --release

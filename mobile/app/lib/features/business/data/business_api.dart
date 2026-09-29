@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-
-import '../../../core/api/api_exception.dart';
+import 'package:thy_core/thy_core.dart';
 
 class CreateBusinessResult {
   const CreateBusinessResult({required this.businessId, required this.accessToken});

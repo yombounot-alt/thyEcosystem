@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:thy_core/thy_core.dart';
 
-import '../../../core/api/api_exception.dart';
 import 'category_models.dart';
 
 class CategoriesApi {

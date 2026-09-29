@@ -1,4 +1,4 @@
-import '../../../core/api/json_helpers.dart';
+import 'package:thy_core/thy_core.dart';
 
 /// Movement types the backend understands; 'initial' and 'sale_out' are created by the server only.
 class MovementType {

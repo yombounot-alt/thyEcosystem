@@ -1,4 +1,5 @@
-import '../../../core/theme/formatters.dart';
+import 'package:thy_core/thy_core.dart';
+
 import '../../business/data/business_api.dart';
 import '../data/sale_models.dart';
 
