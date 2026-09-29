@@ -39,6 +39,12 @@ android {
         versionName = flutter.versionName
     }
 
+    // `resValue` (nom de l'app par variante, ci-dessous) : désactivé par défaut depuis l'Android
+    // Gradle Plugin 9 — sans cette ligne, toute variante qui en déclare un fait échouer le build.
+    buildFeatures {
+        resValues = true
+    }
+
     // Trois environnements installables côte à côte sur un même téléphone (identifiants distincts).
     // Côté Dart, la variante est lue par `appFlavor` (lib/core/config/app_environment.dart).
     flavorDimensions += "environment"

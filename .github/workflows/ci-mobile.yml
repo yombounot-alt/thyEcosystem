@@ -79,14 +79,19 @@ jobs:
           cache: true
       - run: flutter pub get
 
+      # run-annotated.sh : en cas d'échec, la fin du journal devient une annotation (lisible sans
+      # jeton via l'API publique des check-runs).
       - name: Variante dev (debug)
-        run: flutter build apk --flavor dev --debug
+        run: >-
+          ../../.github/scripts/run-annotated.sh "Build Android dev"
+          flutter build apk --flavor dev --debug
 
       # Release de production : obfusquée, symboles de débogage à part (docs/blueprint/11-security.md).
       # L'URL est un domaine réservé (.invalid) : ce build prouve que la chaîne compile, il n'est
       # jamais publié (signé avec la clé de debug faute de android/key.properties).
       - name: Variante prod (release obfusquée)
         run: >-
+          ../../.github/scripts/run-annotated.sh "Build Android prod"
           flutter build apk --flavor prod --release --obfuscate
           --split-debug-info=build/app/outputs/symbols
           --dart-define=THY_API_BASE_URL=https://api.thy.invalid/api/v1
