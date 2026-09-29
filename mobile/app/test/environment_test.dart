@@ -66,7 +66,7 @@ void main() {
       expect(clean.user?.ipAddress, isNull);
       expect(clean.user?.email, isNull);
       expect(clean.breadcrumbs, isEmpty);
-      expect(clean.serverName, isEmpty);
+      expect(clean.serverName, isNull);
     });
 
     test('an event without request or user stays without them', () {

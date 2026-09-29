@@ -10,14 +10,15 @@ const String sentryDsn = String.fromEnvironment('THY_SENTRY_DSN');
 /// (backend/src/kernel/observability/scrub.ts): request method only, user id only, no breadcrumbs
 /// (they carry URLs, typed text and navigation), no server/device name.
 SentryEvent scrubSentryEvent(SentryEvent event) {
-  final request = event.request;
-  final user = event.user;
-  return event.copyWith(
-    request: request == null ? null : SentryRequest(method: request.method),
-    user: user?.id == null ? null : SentryUser(id: user!.id),
-    breadcrumbs: const [],
-    serverName: '',
-  );
+  final method = event.request?.method;
+  final userId = event.user?.id;
+  // Sentry 9 : l'événement se modifie en place (copyWith est déprécié).
+  event
+    ..request = event.request == null ? null : SentryRequest(method: method)
+    ..user = userId == null ? null : SentryUser(id: userId)
+    ..breadcrumbs = []
+    ..serverName = null;
+  return event;
 }
 
 /// Starts the app with crash reporting when a DSN was given at build time, or directly otherwise.
