@@ -72,7 +72,7 @@ THY est **une seule application mobile** (Flutter) adossée à **un seul backend
 | 25  | Dépendances entre modules                                                           | [02-architecture.md](02-architecture.md) §8                                             |
 | 26  | Risques techniques                                                                  | [14-roadmap-risks.md](14-roadmap-risks.md) §3                                           |
 | 27  | Complexité par module                                                               | [14-roadmap-risks.md](14-roadmap-risks.md) §4                                           |
-| —   | **Décisions d'architecture (options / avantages / inconvénients / recommandation)** | [01-decisions.md](01-decisions.md)                                                      |
+| —   | **Décisions d'architecture (options / avantages / inconvénients / recommandation)** | [docs/adr/](../adr/README.md)                                                           |
 
 Ordre de lecture conseillé : ce fichier → **01-decisions** → 02 → 03 → 14.
 
@@ -114,7 +114,7 @@ Le brief demandait explicitement de **revoir** la structure avant implémentatio
 
 ## 5. Décisions qui exigent ton arbitrage
 
-Les options complètes sont dans [01-decisions.md](01-decisions.md). Voici ce qui **bloque le démarrage** de la Phase 0, avec ma recommandation par défaut.
+Les options complètes sont dans les [ADR](../adr/README.md). Voici ce qui **bloque le démarrage** de la Phase 0, avec ma recommandation par défaut.
 
 | #   | Décision          | Recommandation                                                                                                                                                                | Bloquant pour         |
 | --- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
@@ -132,7 +132,7 @@ Les options complètes sont dans [01-decisions.md](01-decisions.md). Voici ce qu
 
 > **Statut (2026-09-22)** : blueprint et décisions D1–D11 validés par l'utilisateur. Plan détaillé de la Phase 0 : [docs/plans/phase-0-foundation.md](../plans/phase-0-foundation.md).
 >
-> **Mise à jour importante** : l'audit de Phase 0 a révélé du code existant substantiel pour Business, Academy et Services (hors de ce dépôt). Ce n'est plus un projet greenfield pour ces trois modules — voir [docs/plans/consolidation-strategy.md](../plans/consolidation-strategy.md) et [ADR-018](01-decisions.md#adr-018--découverte-de-code-existant--stratégie-de-consolidation-2026-09-22).
+> **Mise à jour importante** : l'audit de Phase 0 a révélé du code existant substantiel pour Business, Academy et Services (hors de ce dépôt). Ce n'est plus un projet greenfield pour ces trois modules — voir [docs/plans/consolidation-strategy.md](../plans/consolidation-strategy.md) et [ADR-018](../adr/0018-decouverte-de-code-existant-strategie-de-consolidation.md).
 
 ---
 

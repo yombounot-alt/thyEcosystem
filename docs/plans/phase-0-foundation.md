@@ -163,7 +163,28 @@ _(Description originale du lot :)_
 - Tokens de design partagés (§L0.9).
 - **Dépend de** : L0.6, L0.7, L0.9. **Sortie** : un membre du staff se connecte (MFA), recherche un utilisateur, consulte l'audit.
 
-### L0.12 — Documentation
+### L0.12 — Documentation ✅ _(fait — en attente de commit)_
+
+Livré :
+
+- `docs/adr/` : les 18 ADR du blueprint, un fichier chacune, avec leur statut réel et un **constat
+  de mise en œuvre vérifié dans le code**, plus 4 nouvelles ADR (019 RustFS, 020 staff + TOTP,
+  021 test de contrat, 022 relais d'outbox, celle-ci à valider). `blueprint/01-decisions.md`
+  renvoie désormais vers le registre. Les écarts entre décisions et code sont listés dans le
+  registre (montants `numeric`, dates sans fuseau et UUIDv4 dans `biz`, JWT HS256…).
+- `docs/DATABASE.md` **généré** depuis le catalogue (`db:doc`), contrôlé en CI dans le job e2e ;
+  descriptions des 42 tables en base (migration `0011`).
+- `docs/ARCHITECTURE.md`, `API.md`, `TESTING.md`, `DEPLOYMENT.md` ; `SECURITY.md`,
+  `CONTRIBUTING.md`, `CHANGELOG.md` (`tools/changelog.mjs`) à la racine ; README à jour.
+- `docs/threat-models/` : authentification, tenancy, RBAC/admin, avec leurs écarts ouverts.
+- `docs/runbooks/` : comptes staff, migrations.
+- **Correctif de sécurité trouvé en documentant** : `thy_app` pouvait modifier ou effacer le journal
+  d'audit, `core.login_events` et `sub.subscription_events`. Ces droits sont retirés par la
+  migration `0012`.
+- **Reste** : les écarts ouverts des threat models, et ce qui ne s'écrit qu'après un déploiement
+  (runbooks d'incident et de restauration).
+
+_(Description originale du lot :)_
 
 - `docs/ARCHITECTURE.md`, `DATABASE.md` (généré depuis le catalogue PG + commentaires), `API.md` (lien OpenAPI), `SECURITY.md`, `DEPLOYMENT.md`, `TESTING.md`, `CONTRIBUTING.md`, `CHANGELOG.md` (amorcé par Conventional Commits).
 - `docs/adr/` : transcription des décisions D1–D17 validées en ADR numérotées formelles.

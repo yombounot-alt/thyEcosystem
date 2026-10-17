@@ -6,5 +6,7 @@ pnpm-lock.yaml
 
 # Généré par backend/src/openapi-export.ts (vérifié par la CI backend)
 docs/api/openapi.json
+# Généré par backend/src/database/schema-doc-cli.ts (vérifié par la CI backend)
+docs/DATABASE.md
 # Généré par shared/design-tokens/build.mjs
 shared/design-tokens/build/

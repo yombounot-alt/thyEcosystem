@@ -124,6 +124,9 @@ jobs:
           git diff --exit-code -- docs/api/openapi.json
 
       - run: pnpm --filter @thy/backend run migrate
+      # docs/DATABASE.md est généré depuis le catalogue de la base migrée : il doit être à jour.
+      - name: Documentation de la base à jour (docs/DATABASE.md)
+        run: pnpm --filter @thy/backend run db:doc -- --check
       - run: pnpm --filter @thy/backend run test:e2e
 
   image:

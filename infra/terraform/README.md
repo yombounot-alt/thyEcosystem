@@ -2,7 +2,7 @@
 
 Provisionne un environnement THY sur Google Cloud : réseau privé, Cloud SQL (PostgreSQL 17),
 Memorystore (Redis), Cloud Storage, Secret Manager, Artifact Registry, Cloud Run (`api` + job
-`migrate`) et l'observabilité de base. Décisions : [ADR-012](../../docs/blueprint/01-decisions.md)
+`migrate`) et l'observabilité de base. Décisions : [ADR-012](../../docs/adr/0012-hebergement-cloud-et-region.md)
 (GCP, région `europe-west1` par défaut faute de mesure de latence).
 
 > **État (2026-09-26)** : le code est écrit et **validé localement** (`terraform fmt -check` et
@@ -119,12 +119,13 @@ C'est le critère de sortie de L0.4 : `terraform apply` provisionne staging, le 
 ## Choix et limites connus
 
 - **`NODE_ENV=development` en staging.** En `production`, `validateConfig()` (`backend/src/kernel/config/config.ts`)
-  refuse de démarrer sans fournisseur SMS réel ni adaptateur de stockage S3/GCS — aucun des deux
-  n'existe encore (L0.8). Le squelette `production/` est volontairement réglé sur `production` : il
-  **refusera** de démarrer tant que ce n'est pas écrit, ce qui est le garde-fou voulu.
-- **Le bucket Cloud Storage et sa clé HMAC existent mais rien ne les utilise** (le kernel n'a qu'un
-  adaptateur disque local). Sur Cloud Run, le disque est éphémère : les envois de fichiers ne
-  survivront pas à une révision tant que l'adaptateur GCS n'est pas écrit.
+  refuse de démarrer sans fournisseur SMS ni push réel. Aucun des deux n'est encore branché :
+  seuls les adaptateurs « console » existent. Le squelette `production/` est volontairement réglé
+  sur `production` : il **refusera** de démarrer tant que ce n'est pas fait, ce qui est le garde-fou
+  voulu.
+- **Stockage** : l'API utilise le bucket par l'API compatible S3 de Cloud Storage
+  (`STORAGE_DRIVER=s3`, clé HMAC du compte de service dédié ; ADR-019). Ce chemin est testé contre
+  RustFS en CI, **jamais contre Cloud Storage réel**.
 - **Pas de `worker`** : ce process n'existe pas dans le code (`backend/` = API + migrateur). Le
   module `cloud-run-service` le déploiera tel quel le jour venu.
 - **`edge-cdn-armor` (Cloud CDN + Cloud Armor) est écrit et validé mais non instancié** : il exige un

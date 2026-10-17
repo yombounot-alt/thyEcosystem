@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "migrate": "node dist/database/migrate-cli.js",
+    "db:doc": "node dist/database/schema-doc-cli.js",
     "staff:create": "node dist/modules/admin/staff-cli.js",
     "openapi:export": "node dist/openapi-export.js",
     "test": "vitest run --config vitest.config.ts",
