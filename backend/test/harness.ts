@@ -4,7 +4,7 @@ import pg from "pg";
 import request from "supertest";
 import { AppModule } from "../src/app.module.js";
 import { configureApp } from "../src/bootstrap.js";
-import { CONFIG, type AppConfig } from "../src/kernel/config/config.js";
+import { CONFIG, requireMigratorUrl, type AppConfig } from "../src/kernel/config/config.js";
 import { OutboxRelayService } from "../src/kernel/events/outbox-relay.service.js";
 import { PUSH_SENDER, type PushMessage } from "../src/kernel/notifications/push-sender.port.js";
 import { SMS_SENDER } from "../src/kernel/notifications/sms-sender.port.js";
@@ -90,7 +90,7 @@ export async function createHarness(opts: HarnessOptions = {}): Promise<Harness>
   await app.init();
   await redisReady(app.get(RedisService));
 
-  const sql = new pg.Pool({ connectionString: cfg.migratorDatabaseUrl, max: 2 });
+  const sql = new pg.Pool({ connectionString: requireMigratorUrl(cfg), max: 2 });
   return {
     app,
     server: app.getHttpServer(),

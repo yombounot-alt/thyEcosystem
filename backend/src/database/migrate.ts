@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import type { AppConfig } from "../kernel/config/config.js";
 
 export const MIGRATIONS_DIR = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -63,4 +64,19 @@ export async function runMigrations(databaseUrl: string, dir = MIGRATIONS_DIR): 
     await client.end();
   }
   return applied;
+}
+
+/**
+ * Migrations au démarrage de l'API : confort de développement seulement. En production, l'API ne
+ * doit pas détenir la connexion du migrateur, qui contourne la RLS ; les migrations passent par le
+ * job `migrate` (threat model tenancy, T3). Renvoie l'URL à migrer, ou `null` pour ne rien faire.
+ */
+export function startupMigrationUrl(
+  cfg: Pick<AppConfig, "env" | "migratorDatabaseUrl">,
+): string | null {
+  if (cfg.env === "production" && cfg.migratorDatabaseUrl)
+    throw new Error(
+      "MIGRATOR_DATABASE_URL ne doit pas être fourni au service API en production : les migrations passent par le job migrate",
+    );
+  return cfg.migratorDatabaseUrl;
 }

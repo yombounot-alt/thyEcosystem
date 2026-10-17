@@ -11,11 +11,11 @@ export interface AppConfig {
   corsOrigins: string[];
   /** Connexion applicative (`thy_app`, NOBYPASSRLS) — utilisée par toutes les requêtes runtime. */
   databaseUrl: string;
-  /** Connexion propriétaire du schéma (`thy_migrator`) — utilisée UNIQUEMENT par le migrateur.
-   * Distincte de `databaseUrl` par construction : `thy_app` n'a aucun droit de DDL, et un
-   * superutilisateur (comme `thy_migrator`) contourne toujours RLS, donc le runtime ne doit
-   * jamais s'y connecter (voir docs/blueprint/03-database.md §1, ADR-004). */
-  migratorDatabaseUrl: string;
+  /** Connexion propriétaire du schéma (`thy_migrator`), qui CONTOURNE la RLS : réservée au
+   * migrateur et aux CLI d'exploitation. Le runtime ne s'y connecte jamais (ADR-004). Aucune
+   * valeur par défaut, même en développement (le staging tourne en `development`) : le service
+   * `api` déployé ne la reçoit pas, seul le job `migrate` l'a (threat model tenancy, T3). */
+  migratorDatabaseUrl: string | null;
   dbPoolMax: number;
   redisUrl: string;
   jwt: { secret: string; issuer: string; accessTtlSec: number; refreshTtlDays: number };
@@ -164,8 +164,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       .map((s) => s.trim())
       .filter(Boolean),
     databaseUrl: env.DATABASE_URL ?? "postgres://thy_app:changeme@localhost:5435/thy",
-    migratorDatabaseUrl:
-      env.MIGRATOR_DATABASE_URL ?? "postgres://thy_migrator:changeme@localhost:5435/thy",
+    migratorDatabaseUrl: env.MIGRATOR_DATABASE_URL ?? null,
     dbPoolMax: num(env.DB_POOL_MAX, 10),
     redisUrl: env.REDIS_URL ?? "redis://localhost:6379",
     jwt: {
@@ -252,4 +251,11 @@ export function validateConfig(cfg: AppConfig): void {
     errors.push("RATE_LIMIT_ENABLED ne peut pas être désactivé en production");
   if (errors.length)
     throw new Error(`Configuration de production invalide:\n - ${errors.join("\n - ")}`);
+}
+
+/** Connexion du migrateur, pour les CLI qui en ont besoin (migrations, comptes staff, doc de base). */
+export function requireMigratorUrl(cfg: AppConfig): string {
+  if (!cfg.migratorDatabaseUrl)
+    throw new Error("MIGRATOR_DATABASE_URL est requis pour cette commande (rôle thy_migrator)");
+  return cfg.migratorDatabaseUrl;
 }

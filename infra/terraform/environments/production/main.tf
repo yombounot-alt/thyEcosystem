@@ -213,13 +213,14 @@ module "api" {
     DB_POOL_MAX = "10"
   }
   secret_env = {
-    DATABASE_URL          = module.secrets.secret_ids["database-url"]
-    MIGRATOR_DATABASE_URL = module.secrets.secret_ids["migrator-database-url"]
-    REDIS_URL             = module.secrets.secret_ids["redis-url"]
-    JWT_SECRET            = module.secrets.secret_ids["jwt-secret"]
-    HMAC_PEPPER           = module.secrets.secret_ids["hmac-pepper"]
-    ADMIN_DATABASE_URL    = module.secrets.secret_ids["admin-database-url"]
-    ADMIN_TOTP_KEY        = module.secrets.secret_ids["admin-totp-key"]
+    # Pas de MIGRATOR_DATABASE_URL ici : cette connexion contourne la RLS. Les migrations passent
+    # par le job `migrate` ; l'API refuse de démarrer en production si on la lui fournit.
+    DATABASE_URL       = module.secrets.secret_ids["database-url"]
+    REDIS_URL          = module.secrets.secret_ids["redis-url"]
+    JWT_SECRET         = module.secrets.secret_ids["jwt-secret"]
+    HMAC_PEPPER        = module.secrets.secret_ids["hmac-pepper"]
+    ADMIN_DATABASE_URL = module.secrets.secret_ids["admin-database-url"]
+    ADMIN_TOTP_KEY     = module.secrets.secret_ids["admin-totp-key"]
   }
 
   depends_on = [module.secrets]

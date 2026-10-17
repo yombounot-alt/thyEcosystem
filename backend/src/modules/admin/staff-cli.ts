@@ -9,7 +9,7 @@
 import { randomBytes } from "node:crypto";
 import { parseArgs } from "node:util";
 import pg from "pg";
-import { loadConfig } from "../../kernel/config/config.js";
+import { loadConfig, requireMigratorUrl } from "../../kernel/config/config.js";
 import { CryptoService } from "../../kernel/security/crypto.service.js";
 
 const { values } = parseArgs({
@@ -34,7 +34,7 @@ const crypto = new CryptoService(cfg);
 // 24 caractères base64url (~144 bits) : à conserver dans un gestionnaire de mots de passe.
 const password = randomBytes(18).toString("base64url");
 
-const client = new pg.Client({ connectionString: cfg.migratorDatabaseUrl });
+const client = new pg.Client({ connectionString: requireMigratorUrl(cfg) });
 await client.connect();
 try {
   await client.query("BEGIN");

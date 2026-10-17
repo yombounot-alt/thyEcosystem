@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { loadConfig } from "../kernel/config/config.js";
+import { loadConfig, requireMigratorUrl } from "../kernel/config/config.js";
 
 const SCHEMAS = ["core", "ops", "ntf", "sub", "biz", "public"];
 const APP_ROLES = ["thy_app", "thy_admin_app", "thy_readonly"];
@@ -225,7 +225,7 @@ async function describeTable(
 }
 
 const cfg = loadConfig();
-const client = new pg.Client({ connectionString: cfg.migratorDatabaseUrl });
+const client = new pg.Client({ connectionString: requireMigratorUrl(cfg) });
 await client.connect();
 try {
   const doc = await generate(client);
