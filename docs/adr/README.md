@@ -25,7 +25,7 @@ côtés.
 | [001](0001-style-d-architecture-backend.md)                           | Monolithe modulaire NestJS                                   | Acceptée — sans processus `worker` à ce jour          |
 | [002](0002-organisation-du-depot.md)                                  | Monorepo pnpm + Turborepo + Melos                            | Acceptée                                              |
 | [003](0003-acces-aux-donnees-et-migrations.md)                        | Accès aux données et migrations                              | Amendée par 018                                       |
-| [004](0004-isolation-multi-tenant.md)                                 | Multi-tenant : `business_id` + RLS forcée                    | Acceptée — écart sur le test de fuite                 |
+| [004](0004-isolation-multi-tenant.md)                                 | Multi-tenant : `business_id` + RLS forcée                    | Acceptée                                              |
 | [005](0005-evenements-et-taches-asynchrones.md)                       | Outbox transactionnelle                                      | Amendée par 022                                       |
 | [006](0006-architecture-et-etat-cote-flutter.md)                      | Riverpod + go_router, paquets Melos                          | Acceptée                                              |
 | [007](0007-base-locale-mobile-et-synchronisation-offline.md)          | Drift + journal de commandes                                 | Non implémentée — file de ventes hors ligne seulement |
@@ -56,7 +56,6 @@ accepté par une nouvelle ADR, avant l'échéance indiquée.
 | Dates `timestamp(3)` sans fuseau dans `biz`                           | 016 | Module Money / premier paiement réel              |
 | Identifiants UUIDv4 au lieu d'UUIDv7                                  | 016 | Synchronisation offline (ids générés côté client) |
 | JWT HS256 (secret partagé) au lieu d'une signature asymétrique + JWKS | 010 | Second service qui vérifie les jetons             |
-| Test de fuite RLS limité au schéma `biz`                              | 004 | Prochain schéma métier                            |
 | Règles de dépendances entre modules non vérifiées en CI               | 001 | Deuxième module porté                             |
 | Relais d'outbox : choix à valider                                     | 022 | Prochaine revue d'architecture                    |
 

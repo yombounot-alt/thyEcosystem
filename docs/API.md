@@ -75,10 +75,12 @@ traitement), 429 (trop de requêtes, avec l'en-tête `Retry-After`).
 
 ## Limitation de débit
 
-Les routes sensibles (demande d'OTP, vérification, connexion admin…) sont limitées par fenêtre, par
-IP et/ou par numéro, avec Redis comme compteur. Pour les plus sensibles, Redis indisponible
-entraîne un refus plutôt qu'une ouverture (`failClosed`). En production, la limitation ne peut pas
-être désactivée.
+Les routes sensibles (demande d'OTP, vérification, connexion admin…) sont limitées par fenêtre,
+avec Redis comme compteur. Une route peut cumuler plusieurs règles. La demande d'OTP est ainsi
+limitée par IP + numéro (3 / 10 min) **et** par IP seule (20 / 10 min, 100 / jour), contre la
+fraude au SMS ; s'y ajoutent les quotas par numéro (3 / 10 min, 10 / jour). Pour les routes les
+plus sensibles, Redis indisponible entraîne un refus plutôt qu'une ouverture (`failClosed`). En
+production, la limitation ne peut pas être désactivée.
 
 ## Versionnement
 

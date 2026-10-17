@@ -35,7 +35,7 @@ Un seul dépôt ([ADR-002](adr/0002-organisation-du-depot.md)) :
 Un monolithe modulaire ([ADR-001](adr/0001-style-d-architecture-backend.md)) avec deux points
 d'entrée :
 
-- `src/main.ts` : l'API HTTP. Elle **applique aussi les migrations en attente au démarrage** (verrou consultatif, donc sûr avec plusieurs instances), et le relais d'outbox y tourne ([ADR-022](adr/0022-relais-doutbox-sur-postgresql.md)).
+- `src/main.ts` : l'API HTTP. Le relais d'outbox y tourne ([ADR-022](adr/0022-relais-doutbox-sur-postgresql.md)). Elle applique les migrations en attente à son démarrage **seulement si `MIGRATOR_DATABASE_URL` lui est fourni et hors production** (poste de développement) ; en production, elle refuse de démarrer avec cette variable.
 - `src/database/migrate-cli.ts` : applique `backend/migrations/*.sql`. Ces migrations sont
   forward-only, protégées par une somme de contrôle et un verrou consultatif.
 
@@ -96,7 +96,7 @@ Référence complète, générée depuis la base : [DATABASE.md](DATABASE.md).
 
 Quatre rôles PostgreSQL :
 
-- `thy_migrator`, propriétaire du schéma, utilisé seulement par le migrateur et les CLI ;
+- `thy_migrator`, propriétaire du schéma, qui contourne la RLS : utilisé seulement par le job `migrate` et les CLI, jamais par le service `api` déployé ;
 - `thy_app` (API) et `thy_admin_app` (console), soumis à la RLS ;
 - `thy_readonly`, sans aucun droit pour l'instant.
 

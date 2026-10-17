@@ -37,7 +37,7 @@ Points à connaître :
   comptes et entreprises (`uniquePhone()`, `createBusiness()` dans `test/harness.ts`) : aucun
   nettoyage n'est nécessaire.
 - Suites qui protègent les invariants de sécurité :
-  - `kernel/rls.e2e-spec.ts` : RLS forcée sur `biz`, aucune ligne sans contexte, aucune fuite entre
+  - `kernel/rls.e2e-spec.ts` : RLS forcée sur toute table de tout schéma (sauf les tables globales listées), aucune ligne sans contexte, aucune fuite entre
     entreprises ;
   - `kernel/rbac.e2e-spec.ts` : droits par rôle ;
   - `kernel/auth.e2e-spec.ts` : OTP, rotation et réutilisation des jetons, limitation de débit ;
@@ -86,4 +86,3 @@ annotation. Elle est lisible sans jeton via l'API publique
 - Aucun test contre les vrais services GCP (Cloud SQL, Cloud Storage) : rien n'est déployé.
 - Aucun fournisseur SMS ni push réel.
 - Pas de tests de charge, ni de tests de bout en bout sur appareil réel.
-- Test de fuite RLS limité au schéma `biz` (voir [threat model tenancy](threat-models/tenancy.md)).

@@ -16,5 +16,5 @@ Deux autres contextes RLS : `app.user_id` (données privées utilisateur : Money
 
 - RLS `ENABLE` + `FORCE` ; rôle applicatif `thy_app` en `NOBYPASSRLS` ; contexte posé par `Db.withTenant()` (`app.user_id`, `app.business_id`).
 - Clés étrangères composites `(business_id, id)` dans le schéma `biz` (migration `0004`).
-- **Écart** : le test qui échoue si une table n'a pas sa RLS forcée (`backend/test/kernel/rls.e2e-spec.ts`) ne couvre que le schéma `biz`, pas `core`, `ntf` ni `sub`. Voir [le threat model tenancy](../threat-models/tenancy.md).
+- Le test `backend/test/kernel/rls.e2e-spec.ts` échoue si une table, dans n'importe quel schéma, n'a pas sa RLS forcée, sauf les 19 tables globales listées et justifiées (étendu le 2026-10-17 ; auparavant limité à `biz`). Voir [le threat model tenancy](../threat-models/tenancy.md).
 - Le contexte `app.staff_id` n'existe pas : l'admin passe par un rôle PostgreSQL distinct, `thy_admin_app`, avec des politiques `admin_*` explicites ([ADR-020](0020-authentification-du-staff-comptes-thy-et-totp.md)).

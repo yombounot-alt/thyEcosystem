@@ -163,7 +163,7 @@ _(Description originale du lot :)_
 - Tokens de design partagés (§L0.9).
 - **Dépend de** : L0.6, L0.7, L0.9. **Sortie** : un membre du staff se connecte (MFA), recherche un utilisateur, consulte l'audit.
 
-### L0.12 — Documentation ✅ _(fait — en attente de commit)_
+### L0.12 — Documentation ✅ _(fait, commits `3cfab76` et `692c7b2`)_
 
 Livré :
 
@@ -181,6 +181,9 @@ Livré :
 - **Correctif de sécurité trouvé en documentant** : `thy_app` pouvait modifier ou effacer le journal
   d'audit, `core.login_events` et `sub.subscription_events`. Ces droits sont retirés par la
   migration `0012`.
+- **Correctifs de sécurité qui ont suivi** (2026-10-17, en attente de commit) : le service `api` ne
+  détient plus la connexion du migrateur (refus en production, secret retiré dans Terraform) ;
+  limite par IP seule sur la demande d'OTP ; test de fuite RLS étendu à tous les schémas.
 - **Reste** : les écarts ouverts des threat models, et ce qui ne s'écrit qu'après un déploiement
   (runbooks d'incident et de restauration).
 

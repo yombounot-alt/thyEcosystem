@@ -37,7 +37,7 @@ migrations, quel que soit le schéma, sont des fichiers SQL écrits à la main d
 
 ## Appliquer
 
-- **Local** : la commande ci-dessus, ou démarrer l'API, qui applique les migrations en attente au démarrage. Les tests e2e ne les appliquent pas eux-mêmes.
+- **Local** : la commande ci-dessus, ou démarrer l'API avec `backend/.env`, qui fournit `MIGRATOR_DATABASE_URL` (en développement seulement). Les tests e2e ne les appliquent pas eux-mêmes.
 - **Réinitialiser la base locale** : `./infra/scripts/dev-reset-db.ps1` détruit les données de dev.
 - **GCP** : `gcloud run jobs execute <prefixe>-migrate --region europe-west1 --wait`, **avant** de
   déployer la version de l'API qui en dépend.

@@ -18,7 +18,8 @@ npx nest build
 node --env-file=.env --import ./dist/instrumentation.js dist/main.js   # API sur http://localhost:3300
 ```
 
-L'API applique les migrations en attente à son démarrage. `pnpm start:dev` (rechargement à chaud)
+En développement, l'API applique les migrations en attente à son démarrage, car `.env` fournit
+`MIGRATOR_DATABASE_URL`. Un environnement déployé ne lui donne pas cette variable. `pnpm start:dev` (rechargement à chaud)
 ne charge **pas** `backend/.env` : exporter les variables avant de l'utiliser.
 
 - **Console d'administration** : créer un compte ([runbook](docs/runbooks/staff-accounts.md)),

@@ -57,6 +57,8 @@ Avec `NODE_ENV=production`, **l'API refuse de démarrer** dans chacun de ces cas
 - `ADMIN_TOTP_KEY` absente (la clé de développement est interdite) ;
 - `ADMIN_DATABASE_URL` qui n'utilise pas le rôle `thy_admin_app` ;
 - cookie admin sans `Secure`.
+- `MIGRATOR_DATABASE_URL` fourni au service API : cette connexion contourne la RLS et reste
+  réservée au job `migrate`.
 
 **Conséquence aujourd'hui** : aucun fournisseur SMS ni push réel n'est branché. La production ne
 peut donc pas démarrer, et c'est voulu. Le staging tourne en `NODE_ENV=development` pour cette
