@@ -76,12 +76,44 @@ describe("Row-Level Security — isolation garantie par PostgreSQL (e2e)", () =>
     expect(role.rows[0]).toEqual({ rolbypassrls: false, rolsuper: false });
   });
 
-  it("toutes les tables du schéma biz ont la RLS activée ET forcée", async () => {
-    const res = await h.sql.query(
-      `SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE n.nspname = 'biz' AND c.relkind = 'r' AND NOT (c.relrowsecurity AND c.relforcerowsecurity)`,
+  it("toute table, dans tout schéma, a la RLS activée ET forcée, sauf les tables globales listées", async () => {
+    // Tables sans `business_id`, protégées par le code (docs/threat-models/tenancy.md, T5).
+    // Ajouter une table ici est une décision de sécurité : la justifier en revue.
+    const GLOBAL_TABLES = [
+      // Identité et sessions : lues avant que l'utilisateur ou l'entreprise soient connus.
+      "core.users",
+      "core.otp_challenges",
+      "core.refresh_tokens",
+      "core.login_events",
+      // Catalogues communs à toutes les entreprises.
+      "core.roles",
+      "core.permissions",
+      "core.role_permissions",
+      "sub.plans",
+      "sub.entitlements",
+      "sub.plan_entitlements",
+      // Staff : accédé uniquement par thy_admin_app et la CLI.
+      "core.staff_users",
+      "core.staff_role_assignments",
+      "core.staff_sessions",
+      // Exploitation transverse.
+      "ops.audit_logs",
+      "ops.outbox_events",
+      "ops.processed_events",
+      "ops.idempotency_keys",
+      "ops.feature_flags",
+      "public.schema_migrations",
+    ];
+    const res = await h.sql.query<{ name: string }>(
+      `SELECT n.nspname || '.' || c.relname AS name
+         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relkind IN ('r', 'p')
+          AND n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg\\_%'
+          AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.objid = c.oid AND d.deptype = 'e')
+          AND NOT (c.relrowsecurity AND c.relforcerowsecurity)
+        ORDER BY 1`,
     );
-    expect(res.rows).toEqual([]);
+    expect(res.rows.map((r) => r.name)).toEqual([...GLOBAL_TABLES].sort());
   });
 
   it("sans contexte d'entreprise, aucune ligne n'est visible (fail-closed)", async () => {
