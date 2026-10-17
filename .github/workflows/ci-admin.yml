@@ -1,7 +1,7 @@
 # CI de l'admin (admin/) — voir docs/plans/phase-0-foundation.md L0.3 et L0.11.
-# admin/ ne contient pour l'instant que .gitkeep (aucun code avant L0.11) : chaque étape se
-# désactive donc elle-même tant que admin/package.json n'existe pas, plutôt que d'échouer ou
-# d'être absente — une PR vide doit passer au vert, ce squelette avec.
+# Lint, typecheck, tests (Vitest + jsdom) et build de production de la console d'administration.
+# Les conditions `hashFiles('admin/package.json')` restent : elles ne coûtent rien et gardent le
+# workflow vert si le dossier est un jour déplacé.
 name: CI Admin
 
 on:
@@ -41,3 +41,5 @@ jobs:
         run: pnpm --dir admin run typecheck
       - if: hashFiles('admin/package.json') != ''
         run: pnpm --dir admin run test
+      - if: hashFiles('admin/package.json') != ''
+        run: pnpm --dir admin run build

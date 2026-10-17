@@ -17,7 +17,7 @@ const out = path.resolve(
 );
 
 const app = await NestFactory.create(AppModule, { logger: false });
-app.setGlobalPrefix("api/v1", { exclude: ["health/live", "health/ready"] });
+app.setGlobalPrefix("api/v1", { exclude: ["health/live", "health/ready", "admin/v1/{*path}"] });
 const document = buildOpenApiDocument(app);
 mkdirSync(path.dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(document, null, 2) + "\n");

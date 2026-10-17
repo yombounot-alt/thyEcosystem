@@ -70,6 +70,7 @@ jobs:
     env:
       DATABASE_URL: postgres://thy_app:changeme@localhost:5432/thy
       MIGRATOR_DATABASE_URL: postgres://thy_migrator:changeme@localhost:5432/thy
+      ADMIN_DATABASE_URL: postgres://thy_admin_app:changeme@localhost:5432/thy
       REDIS_URL: redis://localhost:6379
       # Les e2e tournent sur le stockage S3 (RustFS), le chemin de production ; l'adaptateur disque
       # reste couvert par test/kernel/storage.e2e-spec.ts (même contrat, les deux adaptateurs).

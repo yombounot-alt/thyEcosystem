@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AdminModule } from "./modules/admin/admin.module.js";
 import { HealthController } from "./health/health.controller.js";
 import { KernelModule } from "./kernel/kernel.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
@@ -17,6 +18,7 @@ import { NotificationsEngineModule } from "./modules/notifications/notifications
     NotificationsEngineModule,
     SubscriptionsModule,
     BusinessModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

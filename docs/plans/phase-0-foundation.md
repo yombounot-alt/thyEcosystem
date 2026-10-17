@@ -58,7 +58,7 @@ Ordre d'exécution **recommandé** (respecte les dépendances techniques). Les l
 
 ### L0.3 — CI/CD squelette ✅ _(fait, 2026-09-25 — un point reste manuel, voir ci-dessous)_
 
-- `.github/workflows/ci-backend.yml` (lint/format/typecheck + tests unitaires + tests e2e sur services PostgreSQL/Redis éphémères, rôles/extensions rejoués via `infra/docker/postgres/init/*.sql`), `ci-mobile.yml` (`dart format`, `flutter analyze`, `flutter test`, `flutter build web`), `ci-admin.yml` (se désactive lui-même tant que `admin/package.json` n'existe pas — L0.11), `security.yml` (gitleaks, `pnpm audit`, CodeQL JS/TS, Trivy filesystem/IaC + SBOM CycloneDX). Choix assumé : **CodeQL plutôt que Semgrep** (l'un ou l'autre suffit pour ce squelette ; natif GitHub, aucun compte tiers) ; Trivy en `exit-code: 0` (informatif) tant que les faux positifs attendus (mots de passe `changeme` de dev dans `compose.dev.yml`) ne sont pas explicitement mis en liste d'exclusion.
+- `.github/workflows/ci-backend.yml` (lint/format/typecheck + tests unitaires + tests e2e sur services PostgreSQL/Redis éphémères, rôles/extensions rejoués via `infra/docker/postgres/init/*.sql`), `ci-mobile.yml` (`dart format`, `flutter analyze`, `flutter test`, `flutter build web`), `ci-admin.yml` (lint, typecheck, tests et build de `admin/` depuis L0.11), `security.yml` (gitleaks, `pnpm audit`, CodeQL JS/TS, Trivy filesystem/IaC + SBOM CycloneDX). Choix assumé : **CodeQL plutôt que Semgrep** (l'un ou l'autre suffit pour ce squelette ; natif GitHub, aucun compte tiers) ; Trivy en `exit-code: 0` (informatif) tant que les faux positifs attendus (mots de passe `changeme` de dev dans `compose.dev.yml`) ne sont pas explicitement mis en liste d'exclusion.
 - `.github/CODEOWNERS`, `.github/pull_request_template.md` (principes absolus du projet + lien vers la Definition of Done complète de [10-testing.md §8](../blueprint/10-testing.md#8-definition-of-done--module) pour les PR qui terminent un module).
 - **Manuel, non fait par ce lot** : l'environnement GitHub `production` protégé se crée dans Settings → Environments sur github.com (aucun accès `gh`/API disponible depuis cet environnement d'exécution).
 - **Dépend de** : L0.1. **Sortie** : une PR vide déclenche tous les workflows en vert (`ci-admin` se désactive proprement, les 3 autres tournent pour de vrai).
@@ -146,7 +146,18 @@ Fait : `core.businesses`/`business_members`/`business_invitations`/`roles`/`perm
 - Sécurité mobile de base : stockage sécurisé (Keychain/Keystore), obfuscation de build release.
 - **Dépend de** : L0.6, L0.7, L0.9. **Sortie** : le parcours S1 partiel (jusqu'à « entreprise créée ») fonctionne sur émulateur **et appareil réel**, avec le thème/logo THY.
 
-### L0.11 — Admin (shell)
+### L0.11 — Admin (shell) ✅ _(fait — en attente de commit)_
+
+Livré (décision : comptes staff THY + TOTP plutôt que SSO OIDC, faute de fournisseur d'identité) :
+
+- **Backend** `backend/src/modules/admin/` servi sous `/admin/v1/*` (hors préfixe `api/v1`, exclu du contrat OpenAPI public) : comptes staff argon2id créés par CLI (`staff:create`, aucun compte par défaut), **TOTP obligatoire** (RFC 6238, secret chiffré AES-256-GCM, anti-rejeu), cookie de session HttpOnly/SameSite=Strict/`Path=/admin/v1`, jeton anti-CSRF, verrouillage après 5 échecs, expiration par inactivité (30 min) et durée max (8 h). Rôle PostgreSQL dédié `thy_admin_app` aux droits explicites (migration `0010_admin.sql`).
+- Rôles plateforme SUPER_ADMIN / ADMIN / SUPPORT_AGENT, droits `admin:*`. Toute action modifiante exige un **motif** et est **auditée** (`actor_type = 'staff'`).
+- Écrans `admin/` (React 19 + Vite + TanStack Query/Router, tokens CSS partagés, clair/sombre, français) : connexion → enrôlement TOTP (QR code) → tableau de bord des droits ; **Utilisateurs** (recherche, numéros masqués, révélation motivée, suspension/réactivation, déconnexion de tous les appareils) ; **Entreprises** (offre, dérogations de droits avec échéance) ; **Journal d'audit** (filtres) ; **Feature flags**.
+- Tests : 18 e2e backend (TOTP, anti-rejeu, verrouillage, CSRF, expiration, matrice des droits, étanchéité client/staff, effets réels dans l'app), 13 tests front ; parcours complet vérifié à la main via le proxy Vite.
+- Terraform : secrets `admin-database-url` et `admin-totp-key` câblés (staging + squelette production) — **non appliqué**.
+- **Reste** : hébergement de production de l'admin (même origine que `/admin/v1` requise par le cookie : règle du load balancer à ajouter au moment du `terraform apply`) ; mot de passe de `thy_admin_app` à poser en base au déploiement, comme pour `thy_app`.
+
+_(Description originale du lot :)_
 
 - `admin/` : React + Vite + TS, SSO OIDC + MFA staff, RBAC plateforme, sections **Users**, **Audit**, **System settings** (flags, plans/entitlements de base).
 - Tokens de design partagés (§L0.9).

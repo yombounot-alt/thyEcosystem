@@ -40,7 +40,7 @@ export function configureApp(app: INestApplication, cfg: AppConfig): void {
       validationError: { target: false, value: false },
     }),
   );
-  app.setGlobalPrefix("api/v1", { exclude: ["health/live", "health/ready"] });
+  app.setGlobalPrefix("api/v1", { exclude: ["health/live", "health/ready", "admin/v1/{*path}"] });
   if (cfg.openApiEnabled) mountOpenApi(app);
   app.enableShutdownHooks();
 }

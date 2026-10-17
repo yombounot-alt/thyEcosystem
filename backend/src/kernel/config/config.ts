@@ -55,6 +55,23 @@ export interface AppConfig {
     /** Version déployée (SHA de l'image, révision Cloud Run…). */
     release?: string;
   };
+  /** Console d'administration (docs/blueprint/09-admin.md, L0.11). */
+  admin: AdminConfig;
+}
+
+export interface AdminConfig {
+  /** Connexion `thy_admin_app` (droits explicites, voir migration 0010) — jamais celle de l'app. */
+  databaseUrl: string;
+  /** Clé AES-256 (32 octets, base64) qui chiffre les secrets TOTP du staff en base. */
+  totpKey: Buffer;
+  /** Cookie de session `Secure` (https uniquement) : toujours en production. */
+  cookieSecure: boolean;
+  /** Session staff : inactivité maximale, puis durée de vie absolue. */
+  sessionIdleMinutes: number;
+  sessionMaxHours: number;
+  /** Échecs (mot de passe ou code TOTP) avant verrouillage, et durée du verrouillage. */
+  maxFailedLogins: number;
+  lockMinutes: number;
 }
 
 export interface S3Config {
@@ -69,6 +86,25 @@ export interface S3Config {
 }
 
 const DEV_SECRET = "dev-only-secret-change-me-dev-only-secret-change-me";
+/** Clé TOTP de développement (32 octets) : refusée en production. */
+const DEV_TOTP_KEY = Buffer.alloc(32, 7).toString("base64");
+
+function loadAdmin(env: NodeJS.ProcessEnv, nodeEnv: AppConfig["env"]): AdminConfig {
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- vide ⇒ défaut de dev
+  const keyB64 = env.ADMIN_TOTP_KEY || DEV_TOTP_KEY;
+  const totpKey = Buffer.from(keyB64, "base64");
+  if (totpKey.length !== 32)
+    throw new Error("ADMIN_TOTP_KEY doit contenir 32 octets encodés en base64");
+  return {
+    databaseUrl: env.ADMIN_DATABASE_URL ?? "postgres://thy_admin_app:changeme@localhost:5435/thy",
+    totpKey,
+    cookieSecure: bool(env.ADMIN_COOKIE_SECURE, nodeEnv === "production"),
+    sessionIdleMinutes: num(env.ADMIN_SESSION_IDLE_MINUTES, 30),
+    sessionMaxHours: num(env.ADMIN_SESSION_MAX_HOURS, 8),
+    maxFailedLogins: num(env.ADMIN_MAX_FAILED_LOGINS, 5),
+    lockMinutes: num(env.ADMIN_LOCK_MINUTES, 15),
+  };
+}
 
 function num(v: string | undefined, def: number): number {
   if (v === undefined || v === "") return def;
@@ -164,6 +200,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- vide ⇒ absent
       ...(env.APP_RELEASE || env.K_REVISION ? { release: env.APP_RELEASE || env.K_REVISION } : {}),
     },
+    admin: loadAdmin(env, nodeEnv),
   };
 
   validateConfig(cfg);
@@ -202,6 +239,15 @@ export function validateConfig(cfg: AppConfig): void {
     );
   if (cfg.storage.s3 && !cfg.storage.s3.endpoint.startsWith("https://"))
     errors.push("S3_ENDPOINT doit être en https en production");
+  if (cfg.admin.totpKey.equals(Buffer.from(DEV_TOTP_KEY, "base64")))
+    errors.push("ADMIN_TOTP_KEY absent : la clé de développement est interdite en production");
+  if (
+    cfg.admin.databaseUrl === cfg.databaseUrl ||
+    cfg.admin.databaseUrl === cfg.migratorDatabaseUrl
+  )
+    errors.push("ADMIN_DATABASE_URL doit utiliser le rôle dédié thy_admin_app (distinct de l'app)");
+  if (!cfg.admin.cookieSecure)
+    errors.push("ADMIN_COOKIE_SECURE ne peut pas être désactivé en production");
   if (!cfg.rateLimitEnabled)
     errors.push("RATE_LIMIT_ENABLED ne peut pas être désactivé en production");
   if (errors.length)

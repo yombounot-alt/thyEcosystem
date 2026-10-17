@@ -87,6 +87,10 @@ resource "random_password" "db_admin_app" {
   length  = 32
   special = false
 }
+# Clé AES-256 des secrets TOTP du staff (ADMIN_TOTP_KEY, base64 de 32 octets).
+resource "random_bytes" "admin_totp_key" {
+  length = 32
+}
 resource "random_password" "jwt_secret" {
   length  = 48
   special = false
@@ -142,6 +146,7 @@ resource "google_service_account" "runtime" {
 locals {
   database_url          = "postgres://thy_app:${random_password.db_app.result}@${module.cloud_sql.private_ip_address}:5432/${module.cloud_sql.database_name}"
   migrator_database_url = "postgres://${module.cloud_sql.migrator_user}:${random_password.db_migrator.result}@${module.cloud_sql.private_ip_address}:5432/${module.cloud_sql.database_name}"
+  admin_database_url    = "postgres://thy_admin_app:${random_password.db_admin_app.result}@${module.cloud_sql.private_ip_address}:5432/${module.cloud_sql.database_name}"
   redis_url             = "redis://:${module.redis.auth_string}@${module.redis.host}:${module.redis.port}"
 }
 
@@ -153,6 +158,8 @@ module "secrets" {
     "database-url"          = local.database_url
     "migrator-database-url" = local.migrator_database_url
     "redis-url"             = local.redis_url
+    "admin-database-url"    = local.admin_database_url
+    "admin-totp-key"        = random_bytes.admin_totp_key.base64
     "jwt-secret"            = random_password.jwt_secret.result
     "hmac-pepper"           = random_password.hmac_pepper.result
   }
@@ -211,6 +218,8 @@ module "api" {
     REDIS_URL             = module.secrets.secret_ids["redis-url"]
     JWT_SECRET            = module.secrets.secret_ids["jwt-secret"]
     HMAC_PEPPER           = module.secrets.secret_ids["hmac-pepper"]
+    ADMIN_DATABASE_URL    = module.secrets.secret_ids["admin-database-url"]
+    ADMIN_TOTP_KEY        = module.secrets.secret_ids["admin-totp-key"]
   }
 
   depends_on = [module.secrets]
