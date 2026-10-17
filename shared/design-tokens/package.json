@@ -10,8 +10,8 @@
     "./tokens.json": "./tokens.json"
   },
   "scripts": {
-    "build": "node build.mjs",
+    "generate": "node build.mjs",
     "check": "node build.mjs --check --report"
   },
-  "$comment": "Pas de scripts lint/test : Turbo les lancerait dans la CI backend, qui n'a pas Dart. Le contrôle tourne dans la CI mobile (build.mjs --check)."
+  "$comment": "Ni build ni lint/test : Turbo les lancerait dans la CI backend (dépendance de admin/), qui n'a pas Dart. Les sorties générées sont versionnées ; `generate` les régénère, et le contrôle tourne dans la CI mobile (build.mjs --check)."
 }
