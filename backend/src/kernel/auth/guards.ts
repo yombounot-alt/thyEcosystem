@@ -73,14 +73,16 @@ export class RateLimitGuard implements CanActivate {
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     if (!this.cfg.rateLimitEnabled) return true;
-    const opts: RateLimitOptions = meta<RateLimitOptions>(this.reflector, RATE_LIMIT_KEY, ctx) ?? {
-      name: "default",
-      limit: 120,
-      windowSec: 60,
-      by: "user",
-    };
+    const rules = meta<RateLimitOptions[]>(this.reflector, RATE_LIMIT_KEY, ctx) ?? [
+      { name: "default", limit: 120, windowSec: 60, by: "user" },
+    ];
     const req = ctx.switchToHttp().getRequest<AuthedRequest>();
     const res = ctx.switchToHttp().getResponse<Response>();
+    for (const rule of rules) await this.check(rule, req, res);
+    return true;
+  }
+
+  private async check(opts: RateLimitOptions, req: AuthedRequest, res: Response): Promise<void> {
     const ip = req.ip ?? "unknown";
     let subject: string;
     switch (opts.by ?? "user") {
@@ -110,12 +112,11 @@ export class RateLimitGuard implements CanActivate {
           retryAfterSec: ttl,
         });
       }
-      return true;
     } catch (e) {
       if (e instanceof AppError) throw e;
       if (opts.failClosed)
         throw new AppError("SERVICE_UNAVAILABLE", 503, "Service temporairement indisponible");
-      return true; // Redis indisponible : on préfère servir (lecture) que tout bloquer
+      // Redis indisponible : on préfère servir (lecture) que tout bloquer
     }
   }
 }

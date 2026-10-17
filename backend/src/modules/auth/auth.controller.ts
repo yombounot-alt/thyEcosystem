@@ -15,7 +15,14 @@ export class AuthController {
   @Post("otp/request")
   @Public()
   @HttpCode(204)
-  @RateLimit({ name: "otp-request", limit: 3, windowSec: 600, by: "ip+phone", failClosed: true })
+  // Par numéro (ip+phone, plus les quotas d'OtpService) ET par IP seule, contre la fraude au SMS :
+  // une IP ne peut pas viser des milliers de numéros. Large par IP car les opérateurs mobiles
+  // partagent une IP publique entre beaucoup d'abonnés (CGNAT) ; à réviser avec le trafic réel.
+  @RateLimit(
+    { name: "otp-request", limit: 3, windowSec: 600, by: "ip+phone", failClosed: true },
+    { name: "otp-request-ip", limit: 20, windowSec: 600, by: "ip", failClosed: true },
+    { name: "otp-request-ip-day", limit: 100, windowSec: 86_400, by: "ip", failClosed: true },
+  )
   async otpRequest(@Body() dto: OtpRequestDto) {
     await this.auth.otpRequest(dto.phone);
   }

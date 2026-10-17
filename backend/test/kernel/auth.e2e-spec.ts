@@ -1,4 +1,5 @@
 import request from "supertest";
+import { RedisService } from "../../src/kernel/redis/redis.service.js";
 import { API, createHarness, uniquePhone, type Harness } from "../harness.js";
 
 describe("Auth — OTP, refresh, déconnexion (e2e)", () => {
@@ -181,5 +182,32 @@ describe("Auth — limitation de débit (e2e)", () => {
     }
     expect(last).toBe(429);
     expect(Number(retryAfter)).toBeGreaterThan(0);
+  });
+
+  it("une même IP ne peut pas faire envoyer des OTP à des numéros sans limite (fraude au SMS)", async () => {
+    // Toutes les requêtes de test viennent de la même IP, et les compteurs vivent dans Redis :
+    // on les remet à zéro pour que la suite reste rejouable (la fenêtre journalière dure 24 h).
+    const redis = h.app.get(RedisService);
+    const reset = async () => {
+      const keys = await redis.client.keys("rl:otp-request-ip*");
+      if (keys.length) await redis.del(...keys);
+    };
+    await reset();
+    try {
+      for (let i = 0; i < 20; i++) {
+        await request(h.server)
+          .post(`${API}/auth/otp/request`)
+          .send({ phone: uniquePhone() })
+          .expect(204);
+      }
+      const blocked = await request(h.server)
+        .post(`${API}/auth/otp/request`)
+        .send({ phone: uniquePhone() });
+      expect(blocked.status).toBe(429);
+      expect(blocked.body.error.code).toBe("RATE_LIMITED");
+      expect(Number(blocked.headers["retry-after"])).toBeGreaterThan(0);
+    } finally {
+      await reset();
+    }
   });
 });

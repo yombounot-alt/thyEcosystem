@@ -70,4 +70,6 @@ export interface RateLimitOptions {
   /** true : si Redis est indisponible, on REFUSE (OTP, création d'entreprise). Défaut : on laisse passer. */
   failClosed?: boolean;
 }
-export const RateLimit = (opts: RateLimitOptions) => SetMetadata(RATE_LIMIT_KEY, opts);
+/** Une ou plusieurs règles, toutes vérifiées (ex. par IP + téléphone ET par IP seule). */
+export const RateLimit = (...rules: [RateLimitOptions, ...RateLimitOptions[]]) =>
+  SetMetadata(RATE_LIMIT_KEY, rules);
