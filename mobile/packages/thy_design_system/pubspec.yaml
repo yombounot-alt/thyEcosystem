@@ -11,6 +11,11 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
+  alchemist: ^0.14.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+flutter:
+  # Icônes Material dans les composants (et dans les goldens).
+  uses-material-design: true

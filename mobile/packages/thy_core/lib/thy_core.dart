@@ -27,3 +27,5 @@ export 'src/storage/local_store.dart';
 export 'src/storage/token_storage.dart';
 export 'src/theme/formatters.dart';
 export 'src/widgets/async_view.dart';
+// États vide/erreur : définis dans le design system, réexportés pour les écrans existants.
+export 'package:thy_design_system/thy_design_system.dart' show EmptyState, ErrorRetry, LoadingState;
