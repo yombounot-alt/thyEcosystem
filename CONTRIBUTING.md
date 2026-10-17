@@ -29,6 +29,7 @@ ne charge **pas** `backend/.env` : exporter les variables avant de l'utiliser.
   `http://10.0.2.2:3300/api/v1` (l'hôte vu depuis l'émulateur Android). Sur un autre appareil :
   `--dart-define=THY_API_BASE_URL=http://<ip-du-poste>:3300/api/v1`. En développement, le code
   OTP est écrit dans les journaux de l'API.
+- **Galerie du design system** : `cd mobile/widgetbook && flutter run -d chrome`.
 
 ## Règles du projet
 
@@ -69,6 +70,7 @@ Selon ce qui a changé :
 | Migration                          | `pnpm --filter @thy/backend run db:doc` et commiter `docs/DATABASE.md`              |
 | `shared/design-tokens/tokens.json` | `pnpm --filter @thy/design-tokens generate` (Dart requis)                           |
 | App mobile                         | `dart format`, `flutter analyze`, `flutter test` dans `mobile/app`                  |
+| Composant du design system         | Sa page dans `mobile/widgetbook` ; goldens mis à jour et relus                      |
 
 La CI vérifie tout cela et échoue si un fichier généré n'est pas à jour.
 

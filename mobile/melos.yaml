@@ -3,6 +3,7 @@ name: thy_mobile
 packages:
   - app
   - packages/**
+  - widgetbook
 
 command:
   bootstrap:

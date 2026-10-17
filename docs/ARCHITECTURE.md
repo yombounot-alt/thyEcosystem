@@ -23,6 +23,7 @@ Un seul dépôt ([ADR-002](adr/0002-organisation-du-depot.md)) :
 | `mobile/app/`                       | Application Flutter (aujourd'hui : le module Business)                           |
 | `mobile/packages/thy_core`          | Socle de l'app (contrat de module, stockage local, réseau…), sans fonctionnalité |
 | `mobile/packages/thy_design_system` | Thème et composants, tokens générés                                              |
+| `mobile/widgetbook`                 | Galerie des composants (Widgetbook), outil de développement                      |
 | `shared/design-tokens`              | Source unique des couleurs (`tokens.json`) → Dart + CSS                          |
 | `shared/config-presets`             | ESLint, Prettier et tsconfig communs                                             |
 | `infra/`                            | Docker local, Terraform GCP (jamais appliqué), scripts                           |

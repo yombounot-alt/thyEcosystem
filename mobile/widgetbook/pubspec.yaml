@@ -1,0 +1,22 @@
+name: thy_widgetbook
+description: Galerie Widgetbook du design system THY (lot L0.9) — outil de développement, jamais publié.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  thy_design_system:
+    path: ../packages/thy_design_system
+  widgetbook: ^3.25.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

@@ -66,6 +66,11 @@ dart format --output=none --set-exit-if-changed . ../packages && flutter analyze
 - Un test vérifie qu'aucune couleur n'est écrite en dur hors des tokens.
 - `node shared/design-tokens/build.mjs --check --report` : les fichiers générés sont à jour et les
   40 paires de contraste respectent WCAG.
+- Goldens clair/sombre des composants (`mobile/packages/thy_design_system/test/goldens/`) :
+  Alchemist en mode « CI », donc des images identiques sur tous les postes. Après un changement
+  visuel voulu : `flutter test --update-goldens --tags golden` dans le paquet, puis relire les
+  images avant de commiter.
+- `mobile/widgetbook` : la galerie doit compiler et démarrer (test + build web en CI).
 
 ## CI
 

@@ -42,7 +42,7 @@ jobs:
         run: flutter pub get
       - name: Tokens de design à jour + contraste WCAG
         run: node ../../shared/design-tokens/build.mjs --check --report
-      - run: dart format --output=none --set-exit-if-changed . ../packages
+      - run: dart format --output=none --set-exit-if-changed . ../packages ../widgetbook
       - run: flutter analyze
 
       # test/live_api_test.dart s'auto-ignore ici : il ne s'exécute que si
@@ -63,6 +63,17 @@ jobs:
 
       # Build web (sans SDK Android) ; les builds Android sont vérifiés par le job `android`.
       - run: flutter build web --release
+
+      # Galerie Widgetbook du design system (mobile/widgetbook) : elle doit compiler et démarrer.
+      # Les goldens clair/sombre des composants tournent avec les tests du paquet design system
+      # (goldens « CI » d'Alchemist : identiques sous Windows et Linux).
+      - name: Galerie Widgetbook (analyse, test, build web)
+        working-directory: mobile/widgetbook
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+          flutter build web --release
 
   android:
     name: Build Android (variantes dev + prod release obfusquée)
